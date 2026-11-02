@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Google Cloud Directory Sync — MapleWood USD
+     Syncs staff and student accounts to Google Workspace nightly.
+     Contact: marcus.lee (Director of Technology) -->
+<config>
+  <general>
+    <simulationMode>false</simulationMode>
+    <logLevel>INFO</logLevel>
+    <maxExceptions>25</maxExceptions>
+  </general>
+  <ldap>
+    <hostname>mwdc01.maplewoodusd.local</hostname>
+    <port>389</port>
+    <authType>SIMPLE</authType>
+    <user>MAPLEWOOD\svc-gsync</user>
+    <password encoding="base64">R3N5bmMtTWFwbGUtNjYyMQ==</password>
+    <baseDN>DC=maplewoodusd,DC=local</baseDN>
+    <searchScope>SUBTREE</searchScope>
+  </ldap>
+  <google>
+    <domain>maplewoodusd.org</domain>
+    <adminEmail>it-sync@maplewoodusd.org</adminEmail>
+  </google>
+  <sync>
+    <users>
+      <enabled>true</enabled>
+      <userSearchFilter>(&amp;(objectClass=user)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))</userSearchFilter>
+    </users>
+    <groups>
+      <enabled>true</enabled>
+      <groupSearchFilter>(objectClass=group)</groupSearchFilter>
+    </groups>
+  </sync>
+</config>

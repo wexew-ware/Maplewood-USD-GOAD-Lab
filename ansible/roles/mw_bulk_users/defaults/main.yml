@@ -1,0 +1,4 @@
+---
+mw_users_csv: "{{ playbook_dir }}/../ad/{{ domain_name }}/files/users.csv"
+# Temporary location on the DC; the file holds plaintext lab passwords and is deleted after import.
+mw_users_remote: 'C:\Windows\Temp\mw_users.csv'

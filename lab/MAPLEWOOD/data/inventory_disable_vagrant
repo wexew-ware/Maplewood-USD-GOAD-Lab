@@ -1,0 +1,28 @@
+[default]
+; Note: ansible_host *MUST* be an IPv4 address or setting things like DNS
+; servers will break.
+dc01 ansible_host={{ip_range}}.30 dns_domain=dc01 dict_key=dc01 ansible_user=administrator@maplewoodusd.local ansible_password=Mw8dCT-Maple26
+ws01 ansible_host={{ip_range}}.31 dns_domain=dc01 dict_key=ws01 ansible_user=administrator@maplewoodusd.local ansible_password=Mw8dCT-Maple26
+srv01 ansible_host={{ip_range}}.32 dns_domain=dc01 dict_key=srv01 ansible_user=administrator@maplewoodusd.local ansible_password=Mw8dCT-Maple26
+ws02 ansible_host={{ip_range}}.33 dns_domain=dc01 dict_key=ws02 ansible_user=administrator@maplewoodusd.local ansible_password=Mw8dCT-Maple26
+
+[all:vars]
+; domain_name : folder inside ad/
+domain_name=MAPLEWOOD
+
+; winrm connection (windows)
+ansible_winrm_transport=ntlm
+ansible_user=notused
+ansible_password=notused
+ansible_connection=winrm
+ansible_winrm_server_cert_validation=ignore
+ansible_winrm_operation_timeout_sec=400
+ansible_winrm_read_timeout_sec=500
+
+
+; LAB SCENARIO CONFIGURATION -----------------------------
+[domain]
+dc01
+ws01
+srv01
+ws02

@@ -1,0 +1,7 @@
+---
+# MapleWood USD: create the school-based OU tree.
+# Runs before GOAD's ad-data.yml, which puts groups and story accounts into these OUs.
+- name: MapleWood OU tree
+  hosts: dc
+  roles:
+    - { role: 'mw_ou_tree', tags: 'mw_ou_tree' }

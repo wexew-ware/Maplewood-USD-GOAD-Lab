@@ -1,0 +1,41 @@
+---
+# Create the school-based OU tree from ou_tree.json (full DNs, parents first).
+# GOAD's stock OU task keys OUs by name, so it cannot create repeated names
+# such as "Staff" or "Teachers" under every school; this role can.
+
+- name: Read the MapleWood OU tree
+  ansible.builtin.set_fact:
+    mw_ou_tree: "{{ lookup('ansible.builtin.file', mw_ou_tree_file) | from_json }}"
+
+- name: Create missing OUs, parents first
+  ansible.windows.win_powershell:
+    parameters:
+      tree_json: "{{ mw_ou_tree | to_json }}"
+    script: |
+      [CmdletBinding()]
+      param ([String] $tree_json)
+      $ErrorActionPreference = 'Stop'
+      Import-Module ActiveDirectory
+      $Ansible.Changed = $false
+      $created = @()
+      # Windows PowerShell 5.1 emits a JSON array as one pipeline object, so @(... | ConvertFrom-Json).Count
+      # is 1; keep the parsed array in a variable and count that.
+      $tree = $tree_json | ConvertFrom-Json
+      foreach ($ou in $tree) {
+        try {
+          Get-ADOrganizationalUnit -Identity $ou.dn | Out-Null
+        } catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException] {
+          New-ADOrganizationalUnit -Name $ou.name -Path $ou.path -ProtectedFromAccidentalDeletion $false
+          $created += $ou.dn
+          $Ansible.Changed = $true
+        }
+      }
+      $Ansible.Result = @{ created = $created; total = $tree.Count }
+  register: mw_ou_result
+  until: mw_ou_result is not failed
+  retries: 3
+  delay: 30
+
+- name: Report OU tree result
+  ansible.builtin.debug:
+    msg: "{{ mw_ou_result.result.created | length }} OUs created ({{ mw_ou_result.result.total }} in the tree)"

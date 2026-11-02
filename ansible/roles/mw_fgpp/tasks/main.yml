@@ -1,0 +1,55 @@
+---
+# Fine-grained password policies from resources.json, created or updated in place.
+# They take effect at each account's next password change; current passwords are left alone.
+
+- name: Read the MapleWood resources
+  ansible.builtin.set_fact:
+    mw_resources: "{{ lookup('ansible.builtin.file', mw_resources_file) | from_json }}"
+
+- name: Create or update fine-grained password policies and their subjects
+  ansible.windows.win_powershell:
+    parameters:
+      policies_json: "{{ mw_resources.password_policies | to_json }}"
+    script: |
+      [CmdletBinding()]
+      param ([String] $policies_json)
+      $ErrorActionPreference = 'Stop'
+      Import-Module ActiveDirectory
+      $Ansible.Changed = $false
+      $report = @()
+      # Windows PowerShell 5.1 emits a JSON array as one object; ForEach-Object { $_ } unrolls it.
+      foreach ($p in @($policies_json | ConvertFrom-Json | ForEach-Object { $_ })) {
+        # A maximum age of 0 days means "never expires", which AD stores as the largest interval.
+        $maxAge = if ($p.max_age_days -gt 0) { [TimeSpan]::FromDays($p.max_age_days) } else { [TimeSpan]::Parse('10675199.00:00:00') }
+        $settings = @{
+          Precedence = $p.precedence; MinPasswordLength = $p.min_length; ComplexityEnabled = $p.complexity
+          PasswordHistoryCount = $p.history; ReversibleEncryptionEnabled = $false
+          MaxPasswordAge = $maxAge; MinPasswordAge = [TimeSpan]::FromDays($p.min_age_days)
+          LockoutThreshold = $p.lockout_threshold
+          LockoutDuration = [TimeSpan]::FromMinutes($p.lockout_minutes)
+          LockoutObservationWindow = [TimeSpan]::FromMinutes($p.lockout_minutes)
+        }
+        $existing = Get-ADFineGrainedPasswordPolicy -Filter "Name -eq '$($p.name)'"
+        if ($existing) {
+          $drift = $existing.Precedence -ne $p.precedence -or $existing.MinPasswordLength -ne $p.min_length -or
+                   $existing.ComplexityEnabled -ne $p.complexity -or $existing.PasswordHistoryCount -ne $p.history -or
+                   $existing.LockoutThreshold -ne $p.lockout_threshold -or $existing.MaxPasswordAge -ne $maxAge
+          if ($drift) { Set-ADFineGrainedPasswordPolicy -Identity $existing @settings; $Ansible.Changed = $true }
+        } else {
+          New-ADFineGrainedPasswordPolicy -Name $p.name @settings
+          $Ansible.Changed = $true
+        }
+        $current = @(Get-ADFineGrainedPasswordPolicySubject -Identity $p.name | ForEach-Object { $_.Name })
+        $missing = @($p.applies_to | Where-Object { $current -notcontains $_ })
+        if ($missing.Count) {
+          Add-ADFineGrainedPasswordPolicySubject -Identity $p.name -Subjects $missing
+          $Ansible.Changed = $true
+        }
+        $report += "$($p.name) (precedence $($p.precedence)): $($p.applies_to -join ', ')"
+      }
+      $Ansible.Result = $report
+  register: mw_fgpp_result
+
+- name: Report password policies
+  ansible.builtin.debug:
+    msg: "{{ mw_fgpp_result.result }}"

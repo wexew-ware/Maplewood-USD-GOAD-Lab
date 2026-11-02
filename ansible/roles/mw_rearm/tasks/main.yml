@@ -1,0 +1,85 @@
+---
+# Keep Windows evaluation licences alive. The mayfly/windows10 box is not sysprepped, so its
+# 90-day evaluation started when the box was built (January 2024) and has long expired; an
+# expired evaluation shuts Windows down every hour. slmgr /rearm restarts the clock and needs a
+# reboot. Setting SkipRearm first means the rearm never consumes the limited rearm count, so the
+# lab can rearm indefinitely. This role rearms now if needed, and (by default) installs an in-guest
+# scheduled task that does the same unattended, so a long-lived lab keeps itself in date.
+
+- name: Read the Windows licence state
+  ansible.windows.win_powershell:
+    script: |
+      $Ansible.Changed = $false
+      $p = Get-CimInstance SoftwareLicensingProduct | Where-Object { $_.PartialProductKey -and $_.Name -like 'Windows*' } | Select-Object -First 1
+      $Ansible.Result = @{
+        description = "$($p.Description)"; status = [int]$p.LicenseStatus; grace_minutes = [int]$p.GracePeriodRemaining
+        rearms_left = [int](Get-CimInstance SoftwareLicensingService).RemainingWindowsReArmCount
+      }
+  register: mw_licence
+  changed_when: false
+
+- name: Decide whether this host needs a rearm now
+  ansible.builtin.set_fact:
+    # An evaluation that is expired (status != 1) or within the threshold of expiring.
+    mw_should_rearm: >-
+      {{ ('EVAL' in (mw_licence.result.description | upper))
+         and (mw_licence.result.status != 1
+              or mw_licence.result.grace_minutes < mw_rearm_below_days * 1440) }}
+
+- name: Let the rearm run without consuming the rearm count (SkipRearm)
+  ansible.windows.win_regedit:
+    path: HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SoftwareProtectionPlatform
+    name: SkipRearm
+    data: 1
+    type: dword
+  when: mw_should_rearm | bool
+
+- name: Rearm an expired or nearly expired evaluation
+  ansible.windows.win_command: cscript.exe //B //NoLogo C:\Windows\System32\slmgr.vbs /rearm
+  when: mw_should_rearm | bool
+  register: mw_rearmed
+  failed_when: mw_rearmed.rc is defined and mw_rearmed.rc != 0
+
+- name: Reboot to apply the rearm
+  ansible.windows.win_reboot:
+    reboot_timeout: 900
+    post_reboot_delay: 30
+  when: mw_rearmed is changed
+
+- name: Report the evaluation licence
+  ansible.builtin.debug:
+    msg: >-
+      {{ 'rearmed (SkipRearm set; ' ~ mw_licence.result.rearms_left ~ ' rearms still left)' if mw_rearmed is changed
+         else 'ok: ' ~ (mw_licence.result.grace_minutes // 1440) ~ ' days left, status ' ~ mw_licence.result.status }}
+
+# --- Unattended rearm: an in-guest scheduled task that does all of the above by itself ----------
+
+- name: Create the MapleWood program directory
+  ansible.windows.win_file:
+    path: "{{ mw_rearm_dir }}"
+    state: directory
+  when: mw_rearm_install_task | bool
+
+- name: Install the unattended rearm script
+  ansible.windows.win_template:
+    src: rearm.ps1.j2
+    dest: "{{ mw_rearm_script }}"
+  when: mw_rearm_install_task | bool
+
+- name: Register the unattended rearm scheduled task (SYSTEM, at startup and daily)
+  community.windows.win_scheduled_task:
+    name: "{{ mw_rearm_task_name }}"
+    description: "Keeps the Windows evaluation licence in date for the MapleWood USD lab (rearms with SkipRearm, then reboots)."
+    actions:
+      - path: powershell.exe
+        arguments: -NonInteractive -NoProfile -ExecutionPolicy Bypass -File "{{ mw_rearm_script }}"
+    triggers:
+      - type: boot
+        delay: PT2M
+      - type: daily
+        start_boundary: "2020-01-01T{{ mw_rearm_time }}:00"
+    username: SYSTEM
+    run_level: highest
+    state: present
+    enabled: true
+  when: mw_rearm_install_task | bool

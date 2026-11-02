@@ -1,0 +1,710 @@
+{
+  "lab": {
+    "hosts": {
+      "dc01": {
+        "hostname": "mwdc01",
+        "type": "dc",
+        "local_admin_password": "Mw8dCT-Maple26",
+        "domain": "maplewoodusd.local",
+        "path": "DC=maplewoodusd,DC=local",
+        "local_groups": {},
+        "scripts": [
+          "adcs_publish.ps1"
+        ],
+        "vulns": [
+          "files",
+          "adcs_templates"
+        ],
+        "security": [],
+        "vulns_vars": {
+          "files": {
+            "logon_script": {
+              "src": "sysvol/logon.bat",
+              "dest": "C:\\Windows\\SYSVOL\\domain\\scripts\\logon.bat"
+            },
+            "adcs_template": {
+              "src": "adcs/MapleWood-WiFi-User.json",
+              "dest": "C:\\Windows\\Temp\\MapleWood-WiFi-User.json"
+            }
+          },
+          "adcs_templates": {
+            "wifi": {
+              "template_name": "MapleWood-WiFi-User",
+              "template_file": "C:\\Windows\\Temp\\MapleWood-WiFi-User.json"
+            }
+          }
+        }
+      },
+      "ws01": {
+        "hostname": "mhs-staff01",
+        "type": "workstation",
+        "local_admin_password": "Ws-Maple-7Kq2",
+        "domain": "maplewoodusd.local",
+        "path": "OU=Staff Workstations,OU=Computers,OU=Maplewood High,DC=maplewoodusd,DC=local",
+        "local_groups": {
+          "Remote Desktop Users": [
+            "MAPLEWOOD\\SG-MHS-Staff"
+          ],
+          "Administrators": [
+            "MAPLEWOOD\\aaliyah.morgan"
+          ]
+        },
+        "scripts": [],
+        "vulns": [],
+        "security": [],
+        "use_laps": false
+      },
+      "srv01": {
+        "hostname": "mwsrv01",
+        "type": "server",
+        "local_admin_password": "Srv-Maple-4Hn8",
+        "domain": "maplewoodusd.local",
+        "path": "OU=Servers,OU=District Office,DC=maplewoodusd,DC=local",
+        "local_groups": {
+          "Remote Desktop Users": [
+            "MAPLEWOOD\\svc-hvac"
+          ]
+        },
+        "scripts": [
+          "maplegrade_db.ps1"
+        ],
+        "vulns": [
+          "files"
+        ],
+        "security": [],
+        "mssql": {
+          "sa_password": "Mssql_sa-Maple26!",
+          "svcaccount": "svc-sis",
+          "sysadmins": [
+            "MAPLEWOOD\\SG-SIS-Admins"
+          ]
+        },
+        "vulns_vars": {
+          "files": {
+            "maplegrade_web": {
+              "src": "srv01/wwwroot",
+              "dest": "C:\\inetpub\\"
+            },
+            "gcds_config": {
+              "src": "srv01/gcds/maplewood-sync.xml",
+              "dest": "C:\\GCDS\\maplewood-sync.xml"
+            }
+          }
+        },
+        "use_laps": false
+      },
+      "ws02": {
+        "hostname": "mms-lab01",
+        "type": "workstation",
+        "local_admin_password": "Lab-Maple-2Rd6",
+        "domain": "maplewoodusd.local",
+        "path": "OU=Student Labs,OU=Computers,OU=Maplewood Middle,DC=maplewoodusd,DC=local",
+        "local_groups": {},
+        "scripts": [],
+        "vulns": [],
+        "security": [],
+        "use_laps": false
+      }
+    },
+    "domains": {
+      "maplewoodusd.local": {
+        "dc": "dc01",
+        "domain_password": "Mw8dCT-Maple26",
+        "netbios_name": "MAPLEWOOD",
+        "trust": "",
+        "organisation_units": {},
+        "groups": {
+          "universal": {},
+          "global": {
+            "SG-DistrictAdmin": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-Technology": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-Facilities": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-Substitutes": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-MES-Teachers": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-MES-SupportStaff": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-MES-Staff": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MES-Teachers",
+                "SG-MES-SupportStaff"
+              ]
+            },
+            "SG-MES-HelpDesk": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-MMS-Teachers": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-MMS-SupportStaff": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-MMS-Staff": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MMS-Teachers",
+                "SG-MMS-SupportStaff"
+              ]
+            },
+            "SG-MMS-HelpDesk": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-MHS-Teachers": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-MHS-SupportStaff": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-MHS-Staff": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MHS-Teachers",
+                "SG-MHS-SupportStaff"
+              ]
+            },
+            "SG-MHS-HelpDesk": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-Teachers": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MES-Teachers",
+                "SG-MMS-Teachers",
+                "SG-MHS-Teachers"
+              ]
+            },
+            "SG-SupportStaff": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MES-SupportStaff",
+                "SG-MMS-SupportStaff",
+                "SG-MHS-SupportStaff"
+              ]
+            },
+            "SG-AllStaff": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-DistrictAdmin",
+                "SG-Technology",
+                "SG-Facilities",
+                "SG-Substitutes",
+                "SG-MES-Staff",
+                "SG-MMS-Staff",
+                "SG-MHS-Staff"
+              ]
+            },
+            "SG-GradePK": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-GradeK": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-Grade01": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-Grade02": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-Grade03": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-Grade04": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-Grade05": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-MES-Students": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-GradePK",
+                "SG-GradeK",
+                "SG-Grade01",
+                "SG-Grade02",
+                "SG-Grade03",
+                "SG-Grade04",
+                "SG-Grade05"
+              ]
+            },
+            "SG-Grade06": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-Grade07": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-Grade08": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-MMS-Students": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-Grade06",
+                "SG-Grade07",
+                "SG-Grade08"
+              ]
+            },
+            "SG-Grade09": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-Grade10": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-Grade11": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-Grade12": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            },
+            "SG-MHS-Students": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-Grade09",
+                "SG-Grade10",
+                "SG-Grade11",
+                "SG-Grade12"
+              ]
+            },
+            "SG-AllStudents": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MES-Students",
+                "SG-MMS-Students",
+                "SG-MHS-Students"
+              ]
+            },
+            "SG-SIS-Users": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-Teachers"
+              ]
+            },
+            "SG-SIS-Admins": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local"
+            }
+          },
+          "domainlocal": {
+            "DL-Share-District-RW": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-DistrictAdmin"
+              ]
+            },
+            "DL-Share-District-R": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-AllStaff"
+              ]
+            },
+            "DL-Share-Technology-RW": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-Technology"
+              ]
+            },
+            "DL-Share-Facilities-RW": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-Facilities"
+              ]
+            },
+            "DL-Share-MES-Staff-RW": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MES-Staff"
+              ]
+            },
+            "DL-Share-MMS-Staff-RW": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MMS-Staff"
+              ]
+            },
+            "DL-Share-MHS-Staff-RW": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MHS-Staff"
+              ]
+            },
+            "DL-Share-GradePK-RW": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MES-Teachers"
+              ]
+            },
+            "DL-Share-GradePK-R": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-GradePK"
+              ]
+            },
+            "DL-Share-GradeK-RW": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MES-Teachers"
+              ]
+            },
+            "DL-Share-GradeK-R": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-GradeK"
+              ]
+            },
+            "DL-Share-Grade01-RW": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MES-Teachers"
+              ]
+            },
+            "DL-Share-Grade01-R": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-Grade01"
+              ]
+            },
+            "DL-Share-Grade02-RW": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MES-Teachers"
+              ]
+            },
+            "DL-Share-Grade02-R": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-Grade02"
+              ]
+            },
+            "DL-Share-Grade03-RW": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MES-Teachers"
+              ]
+            },
+            "DL-Share-Grade03-R": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-Grade03"
+              ]
+            },
+            "DL-Share-Grade04-RW": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MES-Teachers"
+              ]
+            },
+            "DL-Share-Grade04-R": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-Grade04"
+              ]
+            },
+            "DL-Share-Grade05-RW": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MES-Teachers"
+              ]
+            },
+            "DL-Share-Grade05-R": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-Grade05"
+              ]
+            },
+            "DL-Share-Grade06-RW": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MMS-Teachers"
+              ]
+            },
+            "DL-Share-Grade06-R": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-Grade06"
+              ]
+            },
+            "DL-Share-Grade07-RW": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MMS-Teachers"
+              ]
+            },
+            "DL-Share-Grade07-R": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-Grade07"
+              ]
+            },
+            "DL-Share-Grade08-RW": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MMS-Teachers"
+              ]
+            },
+            "DL-Share-Grade08-R": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-Grade08"
+              ]
+            },
+            "DL-Share-Grade09-RW": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MHS-Teachers"
+              ]
+            },
+            "DL-Share-Grade09-R": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-Grade09"
+              ]
+            },
+            "DL-Share-Grade10-RW": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MHS-Teachers"
+              ]
+            },
+            "DL-Share-Grade10-R": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-Grade10"
+              ]
+            },
+            "DL-Share-Grade11-RW": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MHS-Teachers"
+              ]
+            },
+            "DL-Share-Grade11-R": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-Grade11"
+              ]
+            },
+            "DL-Share-Grade12-RW": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-MHS-Teachers"
+              ]
+            },
+            "DL-Share-Grade12-R": {
+              "path": "OU=Groups,DC=maplewoodusd,DC=local",
+              "members": [
+                "SG-Grade12"
+              ]
+            }
+          }
+        },
+        "multi_domain_groups_member": {},
+        "acls": {
+          "ResetPassword_MES-HelpDesk_MES-Students": {
+            "for": "SG-MES-HelpDesk",
+            "to": "OU=Students,OU=Maplewood Elementary,DC=maplewoodusd,DC=local",
+            "right": "Ext-User-Force-Change-Password",
+            "inheritance": "Descendents"
+          },
+          "ResetPassword_MMS-HelpDesk_MMS-Students": {
+            "for": "SG-MMS-HelpDesk",
+            "to": "OU=Students,OU=Maplewood Middle,DC=maplewoodusd,DC=local",
+            "right": "Ext-User-Force-Change-Password",
+            "inheritance": "Descendents"
+          },
+          "ResetPassword_MHS-HelpDesk_MHS-Students": {
+            "for": "SG-MHS-HelpDesk",
+            "to": "OU=Students,OU=Maplewood High,DC=maplewoodusd,DC=local",
+            "right": "Ext-User-Force-Change-Password",
+            "inheritance": "Descendents"
+          },
+          "ResetPassword_MHS-HelpDesk_MES-Staff": {
+            "for": "SG-MHS-HelpDesk",
+            "to": "OU=Staff,OU=Maplewood Elementary,DC=maplewoodusd,DC=local",
+            "right": "Ext-User-Force-Change-Password",
+            "inheritance": "Descendents"
+          },
+          "ResetPassword_MHS-HelpDesk_MMS-Staff": {
+            "for": "SG-MHS-HelpDesk",
+            "to": "OU=Staff,OU=Maplewood Middle,DC=maplewoodusd,DC=local",
+            "right": "Ext-User-Force-Change-Password",
+            "inheritance": "Descendents"
+          },
+          "ResetPassword_MHS-HelpDesk_MHS-Staff": {
+            "for": "SG-MHS-HelpDesk",
+            "to": "OU=Staff,OU=Maplewood High,DC=maplewoodusd,DC=local",
+            "right": "Ext-User-Force-Change-Password",
+            "inheritance": "Descendents"
+          }
+        },
+        "users": {
+          "dana.whitfield": {
+            "firstname": "Dana",
+            "surname": "Whitfield",
+            "password": "Cedar-Harbor-2219",
+            "city": "Maplewood",
+            "description": "Superintendent",
+            "groups": [
+              "SG-DistrictAdmin"
+            ],
+            "path": "OU=Administration,OU=District Office,DC=maplewoodusd,DC=local"
+          },
+          "marcus.lee": {
+            "firstname": "Marcus",
+            "surname": "Lee",
+            "password": "Summit-Falcon-8841",
+            "city": "Maplewood",
+            "description": "Director of Technology",
+            "groups": [
+              "SG-Technology"
+            ],
+            "path": "OU=Technology,OU=District Office,DC=maplewoodusd,DC=local"
+          },
+          "adm.marcus.lee": {
+            "firstname": "Marcus",
+            "surname": "Lee",
+            "password": "Qv7!mWz2-Lk9#Tr4",
+            "city": "Maplewood",
+            "description": "Director of Technology (admin account)",
+            "groups": [
+              "Domain Admins"
+            ],
+            "path": "OU=Technology,OU=District Office,DC=maplewoodusd,DC=local"
+          },
+          "kevin.ortiz": {
+            "firstname": "Kevin",
+            "surname": "Ortiz",
+            "password": "Birch-River-5530",
+            "city": "Maplewood",
+            "description": "Building Technician",
+            "groups": [
+              "SG-Technology",
+              "SG-MES-HelpDesk"
+            ],
+            "path": "OU=Technology,OU=District Office,DC=maplewoodusd,DC=local"
+          },
+          "alicia.brooks": {
+            "firstname": "Alicia",
+            "surname": "Brooks",
+            "password": "Aspen-Meadow-7716",
+            "city": "Maplewood",
+            "description": "Building Technician",
+            "groups": [
+              "SG-Technology",
+              "SG-MMS-HelpDesk"
+            ],
+            "path": "OU=Technology,OU=District Office,DC=maplewoodusd,DC=local"
+          },
+          "sam.nguyen": {
+            "firstname": "Sam",
+            "surname": "Nguyen",
+            "password": "Willow-Canyon-3302",
+            "city": "Maplewood",
+            "description": "Building Technician",
+            "groups": [
+              "SG-Technology",
+              "SG-MHS-HelpDesk"
+            ],
+            "path": "OU=Technology,OU=District Office,DC=maplewoodusd,DC=local"
+          },
+          "helen.carter": {
+            "firstname": "Helen",
+            "surname": "Carter",
+            "password": "Maple-Lantern-6148",
+            "city": "Maplewood",
+            "description": "Principal",
+            "groups": [
+              "SG-MES-Staff"
+            ],
+            "path": "OU=Staff,OU=Maplewood Elementary,DC=maplewoodusd,DC=local"
+          },
+          "robert.diaz": {
+            "firstname": "Robert",
+            "surname": "Diaz",
+            "password": "Granite-Orchard-9025",
+            "city": "Maplewood",
+            "description": "Principal",
+            "groups": [
+              "SG-MMS-Staff"
+            ],
+            "path": "OU=Staff,OU=Maplewood Middle,DC=maplewoodusd,DC=local"
+          },
+          "linda.okafor": {
+            "firstname": "Linda",
+            "surname": "Okafor",
+            "password": "Coral-Prairie-4470",
+            "city": "Maplewood",
+            "description": "Principal",
+            "groups": [
+              "SG-MHS-Staff"
+            ],
+            "path": "OU=Staff,OU=Maplewood High,DC=maplewoodusd,DC=local"
+          },
+          "svc-sis": {
+            "firstname": "MapleGrade",
+            "surname": "Service",
+            "password": "Summer2025",
+            "city": "Maplewood",
+            "description": "MapleGrade student information system (MSSQL/IIS on SRV01)",
+            "groups": [
+              "SG-SIS-Admins"
+            ],
+            "path": "OU=Service Accounts,DC=maplewoodusd,DC=local",
+            "spns": [
+              "MSSQLSvc/mwsrv01.maplewoodusd.local:1433",
+              "HTTP/maplegrade.maplewoodusd.local"
+            ]
+          },
+          "svc-copier": {
+            "firstname": "Copier",
+            "surname": "Service",
+            "password": "Konica#Scan7",
+            "city": "Maplewood",
+            "description": "Konica C658 scan-to-folder. user svc-copier / pass Konica#Scan7 - front office copier",
+            "groups": [],
+            "path": "OU=Service Accounts,DC=maplewoodusd,DC=local"
+          },
+          "svc-gsync": {
+            "firstname": "Directory",
+            "surname": "Sync",
+            "password": "Gsync-Maple-6621",
+            "city": "Maplewood",
+            "description": "Google Workspace directory sync (GCDS) - password hash sync",
+            "groups": [],
+            "path": "OU=Service Accounts,DC=maplewoodusd,DC=local"
+          },
+          "svc-hvac": {
+            "firstname": "Trane",
+            "surname": "Vendor",
+            "password": "Tr@neBMS-2026",
+            "city": "Maplewood",
+            "description": "Trane building automation vendor remote access - do not disable",
+            "groups": [],
+            "path": "OU=Service Accounts,DC=maplewoodusd,DC=local"
+          },
+          "svc-superadmin": {
+            "firstname": "Superintendent",
+            "surname": "Admin",
+            "password": "Xq7!vR2mLz9#Tw5k",
+            "city": "Maplewood",
+            "description": "Superintendent emergency administrator (legacy) - DO NOT USE",
+            "groups": [],
+            "path": "OU=Administration,OU=District Office,DC=maplewoodusd,DC=local",
+            "spns": [
+              "HTTP/mapleadmin.maplewoodusd.local"
+            ]
+          }
+        },
+        "ca_server": "mwdc01"
+      }
+    }
+  }
+}

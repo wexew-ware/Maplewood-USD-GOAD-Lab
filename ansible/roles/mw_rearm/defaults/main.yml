@@ -1,0 +1,15 @@
+---
+# Rearm when fewer days than this remain on a Windows evaluation.
+mw_rearm_below_days: 14
+
+# Install an in-guest scheduled task that rearms unattended (at startup + daily), so a long-lived
+# lab keeps itself in date without re-running the playbook. Set to false to only rearm now.
+mw_rearm_install_task: true
+# Time of day (24h HH:MM, guest local time) for the daily unattended check.
+mw_rearm_time: "03:00"
+
+# Where the unattended rearm script and its log live on each guest.
+mw_rearm_dir: 'C:\ProgramData\MapleWood'
+mw_rearm_script: '{{ mw_rearm_dir }}\rearm.ps1'
+mw_rearm_log: '{{ mw_rearm_dir }}\rearm.log'
+mw_rearm_task_name: 'MapleWood Eval Rearm'

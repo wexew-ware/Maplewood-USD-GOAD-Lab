@@ -1,0 +1,223 @@
+---
+# Read-only snapshot of a built MapleWood lab, saved as JSON for verify.py.
+# verify.py runs this from GOAD/ansible with GOAD's inventories and passes, in a 0600 vars file:
+#   out_dir          where to write the JSON files
+#   mw_domain        the lab's DNS domain
+#   signin_samples   [{sam, password}] accounts DC01 tries to sign in as
+#   mw_reset_pairs   [{actor, target}] helpdesk reset rights to evaluate on the DC
+#   mw_rsop_sams     [sam] accounts whose resultant password policy to report
+#   mw_gpos          [{name, links, registry}] GPOs to inspect
+#   mw_repl_sams     [sam] accounts to check for DCSync rights on the domain head
+#   mw_sysvol_paths  [path] SYSVOL files to hash (e.g. the logon script)
+#   mw_adcs_template name of the ADCS template to inspect ('' to skip)
+#   mw_probe_host    host that runs the share probes ('none' to skip)
+#   mw_probes        [{sam, password, unc, op}] share reads/writes to try from that host
+#   mw_sis_host      SIS host to probe ('none' to skip); mw_sis_sa_password, mw_sis_db its SQL details
+#   mw_elk_services  [name] log-agent Windows services to check on every domain host ([] to skip)
+#   mw_elk_host      ELK server IP to query over HTTP ('none' to skip); mw_elk_es_port its ES port
+
+- name: Snapshot the domain from DC01
+  hosts: dc
+  gather_facts: false
+  tasks:
+    - name: Collect domain, OUs, users, groups, computers, policies, delegation and GPOs
+      ansible.windows.win_powershell:
+        script: "{{ lookup('ansible.builtin.file', playbook_dir + '/dc_state.ps1') }}"
+        parameters:
+          reset_pairs_json: "{{ mw_reset_pairs | default([]) | to_json }}"
+          rsop_sams_json: "{{ mw_rsop_sams | default([]) | to_json }}"
+          gpos_json: "{{ mw_gpos | default([]) | to_json }}"
+          repl_sams_json: "{{ mw_repl_sams | default([]) | to_json }}"
+          sysvol_paths_json: "{{ mw_sysvol_paths | default([]) | to_json }}"
+          adcs_template: "{{ mw_adcs_template | default('') }}"
+        depth: 6
+      register: dc_state
+      changed_when: false
+      # Right after a reboot DC01 (4 GB) has thrown OutOfMemoryException here once; a retry passes.
+      until: dc_state is not failed
+      retries: 3
+      delay: 30
+
+    - name: Save the domain snapshot
+      ansible.builtin.copy:
+        content: "{{ dc_state.result | to_json }}"
+        dest: "{{ out_dir }}/dc_state.json"
+        mode: '0600'
+      delegate_to: localhost
+
+    - name: Try a sign-in as each sample account (no_log; the input holds passwords)
+      ansible.windows.win_powershell:
+        script: "{{ lookup('ansible.builtin.file', playbook_dir + '/signin_probe.ps1') }}"
+        parameters:
+          samples_json: "{{ signin_samples | to_json }}"
+          dom: "{{ mw_domain }}"
+      register: signin
+      no_log: true
+
+    - name: Save the sign-in results (account names and outcomes only)
+      ansible.builtin.copy:
+        content: "{{ signin.result | to_json }}"
+        dest: "{{ out_dir }}/signin.json"
+        mode: '0600'
+      delegate_to: localhost
+
+- name: Snapshot every other domain host
+  hosts: domain:!dc
+  gather_facts: false
+  tasks:
+    - name: Collect domain membership, local groups and SMB shares with their permissions
+      ansible.windows.win_powershell:
+        depth: 8
+        script: |
+          $Ansible.Changed = $false
+          $cs = Get-CimInstance Win32_ComputerSystem
+          $groups = @{}
+          foreach ($g in Get-LocalGroup) {
+            try { $groups[$g.Name] = @(Get-LocalGroupMember -Group $g.Name | ForEach-Object { $_.Name }) }
+            catch { $groups[$g.Name] = @("<error: $($_.Exception.Message)>") }
+          }
+          function Get-ExplicitAces($acl) {
+            @($acl.Access | Where-Object { -not $_.IsInherited } | ForEach-Object {
+              @{ identity = "$($_.IdentityReference)"; rights = "$($_.FileSystemRights)"; type = "$($_.AccessControlType)" }
+            })
+          }
+          $shares = @(Get-SmbShare | Where-Object { -not $_.Special } | ForEach-Object {
+            $s = $_
+            $acl = Get-Acl -LiteralPath $s.Path
+            @{ name = $s.Name; path = $s.Path; enumeration = "$($s.FolderEnumerationMode)"
+               access = @(Get-SmbShareAccess -Name $s.Name | Where-Object { "$($_.AccessControlType)" -eq 'Allow' } |
+                          ForEach-Object { @{ account = $_.AccountName; right = "$($_.AccessRight)" } })
+               protected = $acl.AreAccessRulesProtected; ntfs = (Get-ExplicitAces $acl)
+               children = @(Get-ChildItem -LiteralPath $s.Path -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+                 @{ name = $_.Name; ntfs = (Get-ExplicitAces (Get-Acl -LiteralPath $_.FullName)) }
+               }) }
+          })
+          $auditPol = @{}
+          foreach ($row in (& auditpol /get /category:* /r 2>$null | Select-Object -Skip 1)) {
+            $f = $row -split ','
+            if ($f.Count -ge 5 -and $f[2].Trim()) { $auditPol[$f[2].Trim()] = $f[4].Trim() }
+          }
+          $Ansible.Result = @{
+            hostname = $env:COMPUTERNAME; domain = $cs.Domain; part_of_domain = $cs.PartOfDomain
+            secure_channel = (Test-ComputerSecureChannel); local_groups = $groups; shares = $shares
+            audit_policy = $auditPol
+          }
+      register: host_state
+      changed_when: false
+
+    - name: Save the host snapshot
+      ansible.builtin.copy:
+        content: "{{ host_state.result | to_json }}"
+        dest: "{{ out_dir }}/host_{{ inventory_hostname }}.json"
+        mode: '0600'
+      delegate_to: localhost
+
+- name: Try share access as sample accounts from a workstation
+  hosts: "{{ mw_probe_host | default('none') }}"
+  gather_facts: false
+  tasks:
+    - name: Run the share probes (no_log; the input holds passwords)
+      ansible.windows.win_powershell:
+        script: "{{ lookup('ansible.builtin.file', playbook_dir + '/share_probe.ps1') }}"
+        parameters:
+          probes_json: "{{ mw_probes | to_json }}"
+          domain: "{{ mw_domain }}"
+      register: probes
+      no_log: true
+
+    - name: Save the probe results (account names, paths and outcomes only)
+      ansible.builtin.copy:
+        content: "{{ probes.result | to_json }}"
+        dest: "{{ out_dir }}/share_probes.json"
+        mode: '0600'
+      delegate_to: localhost
+
+- name: SIS facts from the SIS host
+  hosts: "{{ mw_sis_host | default('none') }}"
+  gather_facts: false
+  tasks:
+    - name: Collect SQL service, MapleGrade database and IIS status (no_log; sa password in input)
+      ansible.windows.win_powershell:
+        script: "{{ lookup('ansible.builtin.file', playbook_dir + '/sis_probe.ps1') }}"
+        parameters:
+          sa_password: "{{ mw_sis_sa_password }}"
+          database: "{{ mw_sis_db }}"
+      register: sis
+      no_log: true
+
+    - name: Save the SIS facts (no secrets)
+      ansible.builtin.copy:
+        content: "{{ sis.result | to_json }}"
+        dest: "{{ out_dir }}/sis.json"
+        mode: '0600'
+      delegate_to: localhost
+
+- name: Snapshot the ELK log agents on every domain host
+  hosts: domain
+  gather_facts: false
+  tasks:
+    - name: Collect the state of each log-agent service (winlogbeat, sysmon64)
+      ansible.windows.win_powershell:
+        depth: 4
+        script: |
+          param ([String] $names_json)
+          $Ansible.Changed = $false
+          # PS 5.1's ConvertFrom-Json emits the array as one pipeline object, so assign (don't @()-wrap)
+          # it, then let the foreach statement unroll it; otherwise the loop runs once over the whole array.
+          $names = $names_json | ConvertFrom-Json
+          $svcs = @(foreach ($n in $names) {
+            $s = Get-Service -Name $n -ErrorAction SilentlyContinue
+            if ($s) { @{ name = "$n"; present = $true; status = "$($s.Status)"; start = "$($s.StartType)" } }
+            else { @{ name = "$n"; present = $false; status = ''; start = '' } }
+          })
+          $Ansible.Result = @{ hostname = "$env:COMPUTERNAME"; services = $svcs }
+        parameters:
+          names_json: "{{ mw_elk_services | default([]) | to_json }}"
+      register: agents
+      changed_when: false
+      when: (mw_elk_services | default([])) | length > 0
+
+    - name: Save the log-agent state
+      ansible.builtin.copy:
+        content: "{{ agents.result | to_json }}"
+        dest: "{{ out_dir }}/agents_{{ inventory_hostname }}.json"
+        mode: '0600'
+      delegate_to: localhost
+      when: agents is not skipped
+
+- name: Snapshot the ELK server over HTTP from the controller
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Query Elasticsearch cluster health
+      ansible.builtin.uri:
+        url: "http://{{ mw_elk_host }}:{{ mw_elk_es_port | default(9200) }}/_cluster/health"
+        return_content: true
+        status_code: [200, 401, 403]
+        timeout: 15
+      register: es_health
+      ignore_errors: true
+      ignore_unreachable: true
+      when: (mw_elk_host | default('none')) != 'none'
+
+    - name: Query the Winlogbeat indices and their document counts
+      ansible.builtin.uri:
+        url: "http://{{ mw_elk_host }}:{{ mw_elk_es_port | default(9200) }}/_cat/indices/winlogbeat-*?format=json&bytes=b"
+        return_content: true
+        status_code: [200, 401, 403, 404]
+        timeout: 15
+      register: es_indices
+      ignore_errors: true
+      ignore_unreachable: true
+      when: (mw_elk_host | default('none')) != 'none'
+
+    - name: Save the ELK server facts (health and index doc counts, no secrets)
+      ansible.builtin.copy:
+        content: >-
+          {{ {'queried': ((mw_elk_host | default('none')) != 'none'),
+              'reachable': (es_health is defined and es_health.status | default(0) == 200),
+              'health': (es_health.json | default({})),
+              'indices': (es_indices.json | default([]))} | to_json }}
+        dest: "{{ out_dir }}/elk.json"
+        mode: '0600'
+      delegate_to: localhost

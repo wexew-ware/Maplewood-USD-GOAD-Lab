@@ -1,0 +1,11 @@
+---
+# MapleWood USD: rearm expired Windows evaluations before anything else runs (the Windows 10
+# box's evaluation has expired, so it shuts down every hour until rearmed). Runs first in the
+# MAPLEWOOD playbook list. It rearms now if needed (SkipRearm first, so the rearm count is never
+# consumed) and installs an in-guest scheduled task that rearms unattended at startup and daily,
+# so a long-lived lab keeps itself in date without re-running this playbook.
+- name: MapleWood evaluation licences
+  hosts: domain
+  gather_facts: false
+  roles:
+    - { role: 'mw_rearm', tags: 'mw_rearm' }

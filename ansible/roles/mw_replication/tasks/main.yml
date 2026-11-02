@@ -1,0 +1,55 @@
+---
+# Grant DCSync (the DS-Replication-Get-Changes and -Get-Changes-All extended rights on the domain
+# head) to the accounts in resources.json. GOAD's acl role cannot express replication rights, so
+# this role adds the ACEs directly. Seeded weakness: an over-privileged directory-sync account.
+
+- name: Read the MapleWood resources
+  ansible.builtin.set_fact:
+    mw_resources: "{{ lookup('ansible.builtin.file', mw_resources_file) | from_json }}"
+
+- name: Grant replication rights on the domain head
+  ansible.windows.win_powershell:
+    parameters:
+      accounts_json: "{{ mw_resources.replication_rights | to_json }}"
+    script: |
+      [CmdletBinding()]
+      param ([String] $accounts_json)
+      $ErrorActionPreference = 'Stop'
+      Import-Module ActiveDirectory
+      $Ansible.Changed = $false
+      $domainDN = (Get-ADDomain).DistinguishedName
+      $path = "AD:\$domainDN"
+      # Control-access rights for DCSync (the pair mimikatz/impacket require).
+      $guids = @('1131f6aa-9c07-11d1-f79f-00c04fc2dcd2', '1131f6ad-9c07-11d1-f79f-00c04fc2dcd2')
+      $report = @()
+      # Windows PowerShell 5.1 emits a JSON array as one object; ForEach-Object { $_ } unrolls it.
+      foreach ($sam in @($accounts_json | ConvertFrom-Json | ForEach-Object { $_ })) {
+        $sid = (Get-ADUser -Identity $sam).SID
+        $acl = Get-Acl -Path $path
+        $added = 0
+        foreach ($guid in $guids) {
+          $present = $false
+          foreach ($ace in $acl.Access) {
+            if ($ace.AccessControlType -ne 'Allow') { continue }
+            if ($ace.ObjectType -ne [guid]$guid) { continue }
+            try { $asid = $ace.IdentityReference.Translate([System.Security.Principal.SecurityIdentifier]) } catch { continue }
+            if ($asid -eq $sid) { $present = $true; break }
+          }
+          if (-not $present) {
+            $ace = New-Object System.DirectoryServices.ActiveDirectoryAccessRule(
+              $sid, [System.DirectoryServices.ActiveDirectoryRights]::ExtendedRight,
+              [System.Security.AccessControl.AccessControlType]::Allow, [guid]$guid)
+            $acl.AddAccessRule($ace)
+            $added++
+          }
+        }
+        if ($added -gt 0) { Set-Acl -Path $path -AclObject $acl; $Ansible.Changed = $true }
+        $report += "${sam}: $added of 2 replication rights added"
+      }
+      $Ansible.Result = $report
+  register: mw_replication_result
+  when: mw_resources.replication_rights | default([]) | length > 0
+
+- name: Report replication grants
+  ansible.builtin.debug:
+    msg: "{{ mw_replication_result.result | default('no replication rights configured') }}"

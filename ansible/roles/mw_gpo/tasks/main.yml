@@ -1,0 +1,151 @@
+---
+# Group Policy from resources.json: create each GPO, set its registry-based policies, write
+# Group Policy Preferences drive maps (item-level targeted by security group) and link it.
+
+- name: Read the MapleWood resources
+  ansible.builtin.set_fact:
+    mw_resources: "{{ lookup('ansible.builtin.file', mw_resources_file) | from_json }}"
+
+- name: Create, configure and link GPOs
+  ansible.windows.win_powershell:
+    parameters:
+      gpos_json: "{{ mw_resources.gpos | to_json }}"
+      netbios: "{{ mw_netbios }}"
+    script: |
+      [CmdletBinding()]
+      param ([String] $gpos_json, [String] $netbios)
+      $ErrorActionPreference = 'Stop'
+      Import-Module GroupPolicy, ActiveDirectory
+      $changes = New-Object System.Collections.ArrayList
+      $driveCse = '{5794DAFD-BE60-433F-88A2-1A31939AC01F}'   # Group Policy Drive Maps client-side extension
+      $driveTool = '{2EA1A81B-48E5-45E9-8BB7-A6E3AC170006}'  # its GPMC editor extension
+      $auditCse = '{F3CCC681-B74C-4060-9F26-CD84525DCA2A}'   # Advanced Audit Policy client-side extension
+      $auditTool = '{0F3F3735-573D-9804-99E4-AB2A69BA5FD4}'  # its GPMC editor extension
+      $toolsKey = '{00000000-0000-0000-0000-000000000000}'
+
+      # gPCUserExtensionNames is "[{cse}{tool}...][...]" sorted by GUID; add or remove $cse/$tool.
+      function Set-Extension([String] $names, [String] $cse, [String] $tool, [bool] $present) {
+        $map = @{}
+        foreach ($m in [regex]::Matches("$names", '\[([^\]]+)\]')) {
+          $guids = @([regex]::Matches($m.Groups[1].Value, '\{[^}]+\}') | ForEach-Object { $_.Value.ToUpper() })
+          $map[$guids[0]] = [System.Collections.Generic.List[string]]@($guids | Select-Object -Skip 1)
+        }
+        if ($present) {
+          foreach ($pair in @(@($cse, $tool), @($toolsKey, $tool))) {
+            if (-not $map.ContainsKey($pair[0])) { $map[$pair[0]] = New-Object System.Collections.Generic.List[string] }
+            if (-not $map[$pair[0]].Contains($pair[1])) { $map[$pair[0]].Add($pair[1]) }
+          }
+        } else {
+          $map.Remove($cse)
+          if ($map.ContainsKey($toolsKey)) {
+            [void]$map[$toolsKey].Remove($tool)
+            if ($map[$toolsKey].Count -eq 0) { $map.Remove($toolsKey) }
+          }
+        }
+        ($map.Keys | Sort-Object | ForEach-Object { '[' + $_ + (($map[$_] | Sort-Object) -join '') + ']' }) -join ''
+      }
+
+      # A stable GUID per drive mapping, so the XML only changes when the mapping does.
+      function Get-StableGuid([String] $text) {
+        $md5 = [System.Security.Cryptography.MD5]::Create()
+        (New-Object Guid (, $md5.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($text)))).ToString().ToUpper()
+      }
+
+      foreach ($g in @($gpos_json | ConvertFrom-Json | ForEach-Object { $_ })) {
+        $gpo = Get-GPO -Name $g.name -ErrorAction SilentlyContinue
+        if (-not $gpo) {
+          $gpo = New-GPO -Name $g.name -Comment 'MapleWood USD lab (mw_gpo)'
+          [void]$changes.Add("created $($g.name)")
+        }
+
+        foreach ($r in @($g.registry | Where-Object { $_ })) {
+          $current = $null
+          try { $current = Get-GPRegistryValue -Guid $gpo.Id -Key $r.key -ValueName $r.value_name -ErrorAction Stop } catch { }
+          if (-not $current -or "$($current.Value)" -ne "$($r.value)" -or "$($current.Type)" -ne $r.type) {
+            Set-GPRegistryValue -Guid $gpo.Id -Key $r.key -ValueName $r.value_name -Type $r.type -Value $r.value | Out-Null
+            [void]$changes.Add("$($g.name): $($r.value_name)")
+          }
+        }
+
+        # Drive maps: Drives.xml when the GPO has any, no file when it has none.
+        $drives = @($g.drives | Where-Object { $_ })
+        $xml = ''
+        if ($drives.Count) {
+          $entries = foreach ($d in $drives) {
+            $sid = (Get-ADGroup -Identity $d.group).SID.Value
+            $uid = Get-StableGuid "$($g.name)|$($d.letter)|$($d.group)"
+            $path = [System.Security.SecurityElement]::Escape($d.path)
+            $label = [System.Security.SecurityElement]::Escape($d.label)
+            "<Drive clsid=`"{935D1B74-9CB8-4e3c-9914-7DD559B7A417}`" name=`"$($d.letter):`" status=`"$($d.letter):`" image=`"2`" changed=`"2026-01-01 00:00:00`" uid=`"{$uid}`" bypassErrors=`"1`">" +
+            "<Properties action=`"U`" thisDrive=`"NOCHANGE`" allDrives=`"NOCHANGE`" userName=`"`" path=`"$path`" label=`"$label`" persistent=`"0`" useLetter=`"1`" letter=`"$($d.letter)`"/>" +
+            "<Filters><FilterGroup bool=`"AND`" not=`"0`" name=`"$netbios\$($d.group)`" sid=`"$sid`" userContext=`"1`" primaryGroup=`"0`" localGroup=`"0`"/></Filters></Drive>"
+          }
+          $xml = "<?xml version=`"1.0`" encoding=`"utf-8`"?>`r`n<Drives clsid=`"{8FDDCC1A-0C3C-43cd-A6B4-71A6DF20DA8C}`">" + ($entries -join '') + "</Drives>`r`n"
+        }
+        $adGpo = Get-ADObject -Filter "objectClass -eq 'groupPolicyContainer' -and Name -eq '{$($gpo.Id)}'" -Properties gPCFileSysPath, gPCUserExtensionNames, versionNumber
+        $dir = Join-Path $adGpo.gPCFileSysPath 'User\Preferences\Drives'
+        $file = Join-Path $dir 'Drives.xml'
+        $old = if (Test-Path -LiteralPath $file) { [System.IO.File]::ReadAllText($file) } else { '' }
+        if ($old -ne $xml) {
+          if ($xml) {
+            New-Item -ItemType Directory -Path $dir -Force | Out-Null
+            [System.IO.File]::WriteAllText($file, $xml, (New-Object System.Text.UTF8Encoding $false))
+          } else {
+            Remove-Item -LiteralPath $file -Force
+          }
+          # Clients only reapply a GPO whose version moved: bump the user half in AD and GPT.INI together.
+          $version = [int]$adGpo.versionNumber + 65536
+          $extensions = Set-Extension $adGpo.gPCUserExtensionNames $driveCse $driveTool ([bool]$xml)
+          if ($extensions) { Set-ADObject -Identity $adGpo -Replace @{ versionNumber = $version; gPCUserExtensionNames = $extensions } }
+          else { Set-ADObject -Identity $adGpo -Replace @{ versionNumber = $version } -Clear gPCUserExtensionNames }
+          $ini = Join-Path $adGpo.gPCFileSysPath 'GPT.INI'
+          $text = if (Test-Path -LiteralPath $ini) { [System.IO.File]::ReadAllText($ini) } else { "[General]`r`n" }
+          $text = if ($text -match '(?m)^Version=\d+') { $text -replace '(?m)^Version=\d+', "Version=$version" } else { $text.TrimEnd() + "`r`nVersion=$version`r`n" }
+          [System.IO.File]::WriteAllText($ini, $text, [System.Text.Encoding]::ASCII)
+          [void]$changes.Add("$($g.name): $(if ($xml) { "$($drives.Count) drive maps" } else { 'drive maps removed' })")
+        }
+
+        # Advanced audit policy: audit.csv in SYSVOL (machine half) + the Audit CSE registered.
+        $audit = @($g.audit | Where-Object { $_ })
+        if ($audit.Count) {
+          $incl = @{ 0 = 'No Auditing'; 1 = 'Success'; 2 = 'Failure'; 3 = 'Success and Failure' }
+          $lines = @('Machine Name,Policy Target,Subcategory,Subcategory GUID,Inclusion Setting,Exclusion Setting,Setting Value')
+          foreach ($a in $audit) { $lines += ",System,Audit $($a.subcategory),$($a.guid),$($incl[[int]$a.value]),,$([int]$a.value)" }
+          $csv = ($lines -join "`r`n") + "`r`n"
+          $adGpoM = Get-ADObject -Filter "objectClass -eq 'groupPolicyContainer' -and Name -eq '{$($gpo.Id)}'" -Properties gPCFileSysPath, gPCMachineExtensionNames, versionNumber
+          $adir = Join-Path $adGpoM.gPCFileSysPath 'Machine\Microsoft\Windows NT\Audit'
+          $afile = Join-Path $adir 'audit.csv'
+          $oldCsv = if (Test-Path -LiteralPath $afile) { [System.IO.File]::ReadAllText($afile) } else { '' }
+          $hasCse = "$($adGpoM.gPCMachineExtensionNames)".ToUpper().Contains($auditCse)
+          if ($oldCsv -ne $csv -or -not $hasCse) {
+            New-Item -ItemType Directory -Path $adir -Force | Out-Null
+            [System.IO.File]::WriteAllText($afile, $csv, (New-Object System.Text.UTF8Encoding $false))
+            $version = [int]$adGpoM.versionNumber + 1   # bump the computer (low) half
+            Set-ADObject -Identity $adGpoM -Replace @{ versionNumber = $version
+              gPCMachineExtensionNames = (Set-Extension $adGpoM.gPCMachineExtensionNames $auditCse $auditTool $true) }
+            $ini = Join-Path $adGpoM.gPCFileSysPath 'GPT.INI'
+            $text = if (Test-Path -LiteralPath $ini) { [System.IO.File]::ReadAllText($ini) } else { "[General]`r`n" }
+            $text = if ($text -match '(?m)^Version=\d+') { $text -replace '(?m)^Version=\d+', "Version=$version" } else { $text.TrimEnd() + "`r`nVersion=$version`r`n" }
+            [System.IO.File]::WriteAllText($ini, $text, [System.Text.Encoding]::ASCII)
+            [void]$changes.Add("$($g.name): $($audit.Count) audit subcategories")
+          }
+        }
+
+        foreach ($target in @($g.links)) {
+          $link = (Get-GPInheritance -Target $target).GpoLinks | Where-Object { $_.GpoId -eq $gpo.Id }
+          if (-not $link) {
+            New-GPLink -Guid $gpo.Id -Target $target -LinkEnabled Yes | Out-Null
+            [void]$changes.Add("$($g.name) linked to $target")
+          } elseif (-not $link.Enabled) {
+            Set-GPLink -Guid $gpo.Id -Target $target -LinkEnabled Yes | Out-Null
+            [void]$changes.Add("$($g.name) link enabled on $target")
+          }
+        }
+      }
+      $Ansible.Changed = $changes.Count -gt 0
+      $Ansible.Result = @($changes)
+  register: mw_gpo_result
+
+- name: Report Group Policy changes
+  ansible.builtin.debug:
+    msg: "{{ mw_gpo_result.result if mw_gpo_result.result else 'no changes' }}"

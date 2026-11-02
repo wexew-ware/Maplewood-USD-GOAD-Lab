@@ -1,0 +1,2 @@
+---
+mw_ou_tree_file: "{{ playbook_dir }}/../ad/{{ domain_name }}/files/ou_tree.json"

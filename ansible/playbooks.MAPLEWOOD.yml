@@ -1,0 +1,16 @@
+MAPLEWOOD:
+  - mw-rearm.yml         # MapleWood: rearm expired Windows evaluations (Windows 10 box)
+  - build.yml
+  - ad-servers.yml
+  - ad-parent_domain.yml
+  - ad-members.yml
+  - mw-ou-tree.yml       # MapleWood: school-based OUs from ou_tree.json
+  - ad-data.yml          # stock: groups + story accounts from config.json
+  - mw-district.yml      # MapleWood: bulk users, password policies, home folders, shares, GPOs
+  - laps.yml
+  - ad-relations.yml
+  - adcs.yml
+  - ad-acl.yml
+  - servers.yml
+  - security.yml
+  - vulnerabilities.yml

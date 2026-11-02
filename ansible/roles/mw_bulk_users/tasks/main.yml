@@ -1,0 +1,132 @@
+---
+# Import bulk staff and students from users.csv in one PowerShell run on the DC.
+# Far faster than one win_domain_user call per account, and it sets the
+# attributes GOAD's user task does not: title, department, office, company,
+# employeeID, mail, manager, account expiry and logon hours.
+
+- name: Import bulk users (the CSV is always removed afterwards)
+  block:
+    - name: Copy the user list to the DC
+      ansible.windows.win_copy:
+        src: "{{ mw_users_csv }}"
+        dest: "{{ mw_users_remote }}"
+
+    - name: Create or update bulk users
+      ansible.windows.win_powershell:
+        parameters:
+          csv_path: "{{ mw_users_remote }}"
+          domain: "{{ mw_domain }}"
+        script: |
+          [CmdletBinding()]
+          param ([String] $csv_path, [String] $domain)
+          $ErrorActionPreference = 'Stop'
+          Import-Module ActiveDirectory
+          $Ansible.Changed = $false
+          $rows = @(Import-Csv -Path $csv_path)
+          $created = 0; $updated = 0; $failures = @()
+          $groupMembers = @{}
+          $noLogonHours = New-Object byte[] 21
+          # CSV column, New-ADUser/Set-ADUser parameter, LDAP attribute (to clear it when the CSV value is empty).
+          $fields = @(
+            @('GivenName', 'GivenName', 'givenName'), @('Surname', 'Surname', 'sn'),
+            @('DisplayName', 'DisplayName', 'displayName'), @('Title', 'Title', 'title'),
+            @('Department', 'Department', 'department'), @('Office', 'Office', 'physicalDeliveryOfficeName'),
+            @('Company', 'Company', 'company'), @('Description', 'Description', 'description'),
+            @('Mail', 'EmailAddress', 'mail'), @('EmployeeID', 'EmployeeID', 'employeeID'),
+            @('ScriptPath', 'ScriptPath', 'scriptPath')
+          )
+
+          foreach ($r in $rows) {
+            try {
+              $sam = $r.SamAccountName
+              # Set-ADUser rejects '' (error "replace"), so empty values are cleared instead of set.
+              $props = @{}; $clear = @()
+              foreach ($f in $fields) {
+                if ($r.($f[0])) { $props[$f[1]] = $r.($f[0]) } else { $clear += $f[2] }
+              }
+              $enabled = [System.Convert]::ToBoolean($r.Enabled)
+              $user = Get-ADUser -Filter "SamAccountName -eq '$sam'" -Properties logonHours
+
+              if (-not $user) {
+                # CN must be unique inside its OU; fall back to "Name (sam)" on a clash.
+                $cn = $r.DisplayName
+                $escaped = $cn.Replace("'", "''")
+                if (Get-ADObject -Filter "Name -eq '$escaped'" -SearchBase $r.Path -SearchScope OneLevel) {
+                  $cn = "$($r.DisplayName) ($sam)"
+                }
+                $pw = ConvertTo-SecureString $r.Password -AsPlainText -Force
+                New-ADUser -Name $cn -SamAccountName $sam -UserPrincipalName "$sam@$domain" `
+                  -Path $r.Path -AccountPassword $pw -Enabled $enabled `
+                  -PasswordNeverExpires $true -ChangePasswordAtLogon $false @props
+                $user = Get-ADUser -Identity $sam
+                $created++
+                $Ansible.Changed = $true
+              } else {
+                Set-ADUser -Identity $user @props
+                if ($clear) { Set-ADUser -Identity $user -Clear $clear }
+                if ($user.Enabled -ne $enabled) { Set-ADUser -Identity $user -Enabled $enabled }
+                $currentOu = ($user.DistinguishedName -split '(?<!\\),', 2)[1]
+                if ($currentOu -ne $r.Path) { Move-ADObject -Identity $user.DistinguishedName -TargetPath $r.Path }
+                $updated++
+              }
+
+              if ($r.AccountExpires) {
+                $expires = [datetime]::ParseExact($r.AccountExpires, 'yyyy-MM-dd', $null)
+                Set-ADAccountExpiration -Identity $sam -DateTime $expires
+              }
+              # LogonHours: 'none' = no permitted hours, 42 hex digits = a weekly schedule in UTC
+              # (from the generator), empty = unrestricted. Only write when the value differs.
+              if ($r.LogonHours -eq 'none') {
+                $wantHours = $noLogonHours
+              } elseif ($r.LogonHours) {
+                $wantHours = [byte[]] -split ($r.LogonHours -replace '..', '0x$& ')
+              } else {
+                $wantHours = $null
+              }
+              $haveHours = if ($user.logonHours) { [BitConverter]::ToString($user.logonHours) } else { '' }
+              if ($null -eq $wantHours) {
+                if ($haveHours) { Set-ADUser -Identity $sam -Clear logonHours }
+              } elseif ($haveHours -ne [BitConverter]::ToString($wantHours)) {
+                Set-ADUser -Identity $sam -Replace @{ logonHours = $wantHours }
+              }
+              foreach ($g in ($r.Groups -split ';' | Where-Object { $_ })) {
+                if (-not $groupMembers.ContainsKey($g)) { $groupMembers[$g] = New-Object System.Collections.ArrayList }
+                [void]$groupMembers[$g].Add($sam)
+              }
+            } catch {
+              $failures += "$($r.SamAccountName): $($_.Exception.Message)"
+            }
+          }
+
+          # Group membership in bulk, one call per group (already-present members are fine).
+          foreach ($g in $groupMembers.Keys) {
+            try {
+              Add-ADGroupMember -Identity $g -Members $groupMembers[$g].ToArray()
+            } catch {
+              $failures += "group ${g}: $($_.Exception.Message)"
+            }
+          }
+
+          # Managers last, so every manager account already exists.
+          foreach ($r in ($rows | Where-Object { $_.Manager })) {
+            try {
+              Set-ADUser -Identity $r.SamAccountName -Manager $r.Manager
+            } catch {
+              $failures += "manager for $($r.SamAccountName): $($_.Exception.Message)"
+            }
+          }
+
+          $Ansible.Result = @{ rows = $rows.Count; created = $created; updated = $updated; failures = $failures }
+          if ($failures.Count -gt 0) {
+            throw "Bulk import finished with $($failures.Count) failure(s):`n" + ($failures -join "`n")
+          }
+      register: mw_bulk_result
+  always:
+    - name: Remove the user list from the DC
+      ansible.windows.win_file:
+        path: "{{ mw_users_remote }}"
+        state: absent
+
+- name: Report bulk import result
+  ansible.builtin.debug:
+    msg: "{{ mw_bulk_result.result.rows }} rows: {{ mw_bulk_result.result.created }} created, {{ mw_bulk_result.result.updated }} updated"

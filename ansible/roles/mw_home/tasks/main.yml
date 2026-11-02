@@ -1,0 +1,34 @@
+---
+# Point staff accounts at their home folder on the file server (mapped at logon as H:).
+# The folders themselves are created by mw_shares on the file server.
+
+- name: Read the MapleWood resources
+  ansible.builtin.set_fact:
+    mw_resources: "{{ lookup('ansible.builtin.file', mw_resources_file) | from_json }}"
+
+- name: Set home directory and drive on staff accounts
+  ansible.windows.win_powershell:
+    parameters:
+      homes_json: "{{ mw_resources.home_folders | to_json }}"
+    script: |
+      [CmdletBinding()]
+      param ([String] $homes_json)
+      $ErrorActionPreference = 'Stop'
+      Import-Module ActiveDirectory
+      $Ansible.Changed = $false
+      $homes = @($homes_json | ConvertFrom-Json | ForEach-Object { $_ })
+      $updated = 0
+      foreach ($h in $homes) {
+        $u = Get-ADUser -Identity $h.sam -Properties HomeDirectory, HomeDrive
+        if ($u.HomeDirectory -ne $h.directory -or $u.HomeDrive -ne $h.drive) {
+          Set-ADUser -Identity $u -HomeDirectory $h.directory -HomeDrive $h.drive
+          $updated++
+          $Ansible.Changed = $true
+        }
+      }
+      $Ansible.Result = @{ accounts = $homes.Count; updated = $updated }
+  register: mw_home_result
+
+- name: Report home folder attributes
+  ansible.builtin.debug:
+    msg: "{{ mw_home_result.result.accounts }} staff accounts, {{ mw_home_result.result.updated }} updated"

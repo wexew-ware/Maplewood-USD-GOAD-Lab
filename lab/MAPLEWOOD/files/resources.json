@@ -1,0 +1,1329 @@
+{
+  "file_server": {
+    "host": "srv01",
+    "hostname": "mwsrv01",
+    "root": "C:\\Shares"
+  },
+  "shares": [
+    {
+      "name": "Home$",
+      "path": "C:\\Shares\\Home",
+      "description": "Staff home folders (H:)",
+      "share_access": {
+        "BUILTIN\\Administrators": "Full",
+        "NT AUTHORITY\\Authenticated Users": "Change"
+      },
+      "groups": {},
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full"
+      },
+      "home": true
+    },
+    {
+      "name": "District",
+      "path": "C:\\Shares\\District",
+      "description": "District-wide documents",
+      "share_access": {
+        "BUILTIN\\Administrators": "Full",
+        "NT AUTHORITY\\Authenticated Users": "Change"
+      },
+      "groups": {
+        "DL-Share-District-RW": [
+          "SG-DistrictAdmin"
+        ],
+        "DL-Share-District-R": [
+          "SG-AllStaff"
+        ]
+      },
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full",
+        "MAPLEWOOD\\DL-Share-District-RW": "modify",
+        "MAPLEWOOD\\DL-Share-District-R": "read"
+      },
+      "drive": {
+        "letter": "P",
+        "group": "SG-AllStaff"
+      }
+    },
+    {
+      "name": "Technology$",
+      "path": "C:\\Shares\\Technology",
+      "description": "Technology department",
+      "share_access": {
+        "BUILTIN\\Administrators": "Full",
+        "NT AUTHORITY\\Authenticated Users": "Change"
+      },
+      "groups": {
+        "DL-Share-Technology-RW": [
+          "SG-Technology"
+        ]
+      },
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full",
+        "MAPLEWOOD\\DL-Share-Technology-RW": "modify"
+      },
+      "drive": {
+        "letter": "T",
+        "group": "SG-Technology"
+      }
+    },
+    {
+      "name": "Facilities$",
+      "path": "C:\\Shares\\Facilities",
+      "description": "Facilities department",
+      "share_access": {
+        "BUILTIN\\Administrators": "Full",
+        "NT AUTHORITY\\Authenticated Users": "Change"
+      },
+      "groups": {
+        "DL-Share-Facilities-RW": [
+          "SG-Facilities"
+        ]
+      },
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full",
+        "MAPLEWOOD\\DL-Share-Facilities-RW": "modify"
+      },
+      "drive": {
+        "letter": "F",
+        "group": "SG-Facilities"
+      }
+    },
+    {
+      "name": "MES-Staff$",
+      "path": "C:\\Shares\\MES-Staff",
+      "description": "Maplewood Elementary staff",
+      "share_access": {
+        "BUILTIN\\Administrators": "Full",
+        "NT AUTHORITY\\Authenticated Users": "Change"
+      },
+      "groups": {
+        "DL-Share-MES-Staff-RW": [
+          "SG-MES-Staff"
+        ]
+      },
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full",
+        "MAPLEWOOD\\DL-Share-MES-Staff-RW": "modify"
+      },
+      "drive": {
+        "letter": "S",
+        "group": "SG-MES-Staff"
+      }
+    },
+    {
+      "name": "MMS-Staff$",
+      "path": "C:\\Shares\\MMS-Staff",
+      "description": "Maplewood Middle staff",
+      "share_access": {
+        "BUILTIN\\Administrators": "Full",
+        "NT AUTHORITY\\Authenticated Users": "Change"
+      },
+      "groups": {
+        "DL-Share-MMS-Staff-RW": [
+          "SG-MMS-Staff"
+        ]
+      },
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full",
+        "MAPLEWOOD\\DL-Share-MMS-Staff-RW": "modify"
+      },
+      "drive": {
+        "letter": "S",
+        "group": "SG-MMS-Staff"
+      }
+    },
+    {
+      "name": "MHS-Staff$",
+      "path": "C:\\Shares\\MHS-Staff",
+      "description": "Maplewood High staff",
+      "share_access": {
+        "BUILTIN\\Administrators": "Full",
+        "NT AUTHORITY\\Authenticated Users": "Change"
+      },
+      "groups": {
+        "DL-Share-MHS-Staff-RW": [
+          "SG-MHS-Staff"
+        ]
+      },
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full",
+        "MAPLEWOOD\\DL-Share-MHS-Staff-RW": "modify"
+      },
+      "drive": {
+        "letter": "S",
+        "group": "SG-MHS-Staff"
+      }
+    },
+    {
+      "name": "GradePK",
+      "path": "C:\\Shares\\GradePK",
+      "description": "Pre-K class share (Maplewood Elementary)",
+      "share_access": {
+        "BUILTIN\\Administrators": "Full",
+        "NT AUTHORITY\\Authenticated Users": "Change"
+      },
+      "groups": {
+        "DL-Share-GradePK-RW": [
+          "SG-MES-Teachers"
+        ],
+        "DL-Share-GradePK-R": [
+          "SG-GradePK"
+        ]
+      },
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full",
+        "MAPLEWOOD\\DL-Share-GradePK-RW": "modify",
+        "MAPLEWOOD\\DL-Share-GradePK-R": "read"
+      },
+      "drive": {
+        "letter": "G",
+        "group": "SG-GradePK"
+      }
+    },
+    {
+      "name": "GradeK",
+      "path": "C:\\Shares\\GradeK",
+      "description": "Kindergarten class share (Maplewood Elementary)",
+      "share_access": {
+        "BUILTIN\\Administrators": "Full",
+        "NT AUTHORITY\\Authenticated Users": "Change"
+      },
+      "groups": {
+        "DL-Share-GradeK-RW": [
+          "SG-MES-Teachers"
+        ],
+        "DL-Share-GradeK-R": [
+          "SG-GradeK"
+        ]
+      },
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full",
+        "MAPLEWOOD\\DL-Share-GradeK-RW": "modify",
+        "MAPLEWOOD\\DL-Share-GradeK-R": "read"
+      },
+      "drive": {
+        "letter": "G",
+        "group": "SG-GradeK"
+      }
+    },
+    {
+      "name": "Grade01",
+      "path": "C:\\Shares\\Grade01",
+      "description": "Grade 1 class share (Maplewood Elementary)",
+      "share_access": {
+        "BUILTIN\\Administrators": "Full",
+        "NT AUTHORITY\\Authenticated Users": "Change"
+      },
+      "groups": {
+        "DL-Share-Grade01-RW": [
+          "SG-MES-Teachers"
+        ],
+        "DL-Share-Grade01-R": [
+          "SG-Grade01"
+        ]
+      },
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full",
+        "MAPLEWOOD\\DL-Share-Grade01-RW": "modify",
+        "MAPLEWOOD\\DL-Share-Grade01-R": "read"
+      },
+      "drive": {
+        "letter": "G",
+        "group": "SG-Grade01"
+      }
+    },
+    {
+      "name": "Grade02",
+      "path": "C:\\Shares\\Grade02",
+      "description": "Grade 2 class share (Maplewood Elementary)",
+      "share_access": {
+        "BUILTIN\\Administrators": "Full",
+        "NT AUTHORITY\\Authenticated Users": "Change"
+      },
+      "groups": {
+        "DL-Share-Grade02-RW": [
+          "SG-MES-Teachers"
+        ],
+        "DL-Share-Grade02-R": [
+          "SG-Grade02"
+        ]
+      },
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full",
+        "MAPLEWOOD\\DL-Share-Grade02-RW": "modify",
+        "MAPLEWOOD\\DL-Share-Grade02-R": "read"
+      },
+      "drive": {
+        "letter": "G",
+        "group": "SG-Grade02"
+      }
+    },
+    {
+      "name": "Grade03",
+      "path": "C:\\Shares\\Grade03",
+      "description": "Grade 3 class share (Maplewood Elementary)",
+      "share_access": {
+        "BUILTIN\\Administrators": "Full",
+        "NT AUTHORITY\\Authenticated Users": "Change"
+      },
+      "groups": {
+        "DL-Share-Grade03-RW": [
+          "SG-MES-Teachers"
+        ],
+        "DL-Share-Grade03-R": [
+          "SG-Grade03"
+        ]
+      },
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full",
+        "MAPLEWOOD\\DL-Share-Grade03-RW": "modify",
+        "MAPLEWOOD\\DL-Share-Grade03-R": "read"
+      },
+      "drive": {
+        "letter": "G",
+        "group": "SG-Grade03"
+      }
+    },
+    {
+      "name": "Grade04",
+      "path": "C:\\Shares\\Grade04",
+      "description": "Grade 4 class share (Maplewood Elementary)",
+      "share_access": {
+        "BUILTIN\\Administrators": "Full",
+        "NT AUTHORITY\\Authenticated Users": "Change"
+      },
+      "groups": {
+        "DL-Share-Grade04-RW": [
+          "SG-MES-Teachers"
+        ],
+        "DL-Share-Grade04-R": [
+          "SG-Grade04"
+        ]
+      },
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full",
+        "MAPLEWOOD\\DL-Share-Grade04-RW": "modify",
+        "MAPLEWOOD\\DL-Share-Grade04-R": "read"
+      },
+      "drive": {
+        "letter": "G",
+        "group": "SG-Grade04"
+      }
+    },
+    {
+      "name": "Grade05",
+      "path": "C:\\Shares\\Grade05",
+      "description": "Grade 5 class share (Maplewood Elementary)",
+      "share_access": {
+        "BUILTIN\\Administrators": "Full",
+        "NT AUTHORITY\\Authenticated Users": "Change"
+      },
+      "groups": {
+        "DL-Share-Grade05-RW": [
+          "SG-MES-Teachers"
+        ],
+        "DL-Share-Grade05-R": [
+          "SG-Grade05"
+        ]
+      },
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full",
+        "MAPLEWOOD\\DL-Share-Grade05-RW": "modify",
+        "MAPLEWOOD\\DL-Share-Grade05-R": "read"
+      },
+      "drive": {
+        "letter": "G",
+        "group": "SG-Grade05"
+      }
+    },
+    {
+      "name": "Grade06",
+      "path": "C:\\Shares\\Grade06",
+      "description": "Grade 6 class share (Maplewood Middle)",
+      "share_access": {
+        "BUILTIN\\Administrators": "Full",
+        "NT AUTHORITY\\Authenticated Users": "Change"
+      },
+      "groups": {
+        "DL-Share-Grade06-RW": [
+          "SG-MMS-Teachers"
+        ],
+        "DL-Share-Grade06-R": [
+          "SG-Grade06"
+        ]
+      },
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full",
+        "MAPLEWOOD\\DL-Share-Grade06-RW": "modify",
+        "MAPLEWOOD\\DL-Share-Grade06-R": "read"
+      },
+      "drive": {
+        "letter": "G",
+        "group": "SG-Grade06"
+      }
+    },
+    {
+      "name": "Grade07",
+      "path": "C:\\Shares\\Grade07",
+      "description": "Grade 7 class share (Maplewood Middle)",
+      "share_access": {
+        "BUILTIN\\Administrators": "Full",
+        "NT AUTHORITY\\Authenticated Users": "Change"
+      },
+      "groups": {
+        "DL-Share-Grade07-RW": [
+          "SG-MMS-Teachers"
+        ],
+        "DL-Share-Grade07-R": [
+          "SG-Grade07"
+        ]
+      },
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full",
+        "MAPLEWOOD\\DL-Share-Grade07-RW": "modify",
+        "MAPLEWOOD\\DL-Share-Grade07-R": "read"
+      },
+      "drive": {
+        "letter": "G",
+        "group": "SG-Grade07"
+      }
+    },
+    {
+      "name": "Grade08",
+      "path": "C:\\Shares\\Grade08",
+      "description": "Grade 8 class share (Maplewood Middle)",
+      "share_access": {
+        "BUILTIN\\Administrators": "Full",
+        "NT AUTHORITY\\Authenticated Users": "Change"
+      },
+      "groups": {
+        "DL-Share-Grade08-RW": [
+          "SG-MMS-Teachers"
+        ],
+        "DL-Share-Grade08-R": [
+          "SG-Grade08"
+        ]
+      },
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full",
+        "MAPLEWOOD\\DL-Share-Grade08-RW": "modify",
+        "MAPLEWOOD\\DL-Share-Grade08-R": "read"
+      },
+      "drive": {
+        "letter": "G",
+        "group": "SG-Grade08"
+      }
+    },
+    {
+      "name": "Grade09",
+      "path": "C:\\Shares\\Grade09",
+      "description": "Grade 9 class share (Maplewood High)",
+      "share_access": {
+        "BUILTIN\\Administrators": "Full",
+        "NT AUTHORITY\\Authenticated Users": "Change"
+      },
+      "groups": {
+        "DL-Share-Grade09-RW": [
+          "SG-MHS-Teachers"
+        ],
+        "DL-Share-Grade09-R": [
+          "SG-Grade09"
+        ]
+      },
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full",
+        "MAPLEWOOD\\DL-Share-Grade09-RW": "modify",
+        "MAPLEWOOD\\DL-Share-Grade09-R": "read"
+      },
+      "drive": {
+        "letter": "G",
+        "group": "SG-Grade09"
+      }
+    },
+    {
+      "name": "Grade10",
+      "path": "C:\\Shares\\Grade10",
+      "description": "Grade 10 class share (Maplewood High)",
+      "share_access": {
+        "BUILTIN\\Administrators": "Full",
+        "NT AUTHORITY\\Authenticated Users": "Change"
+      },
+      "groups": {
+        "DL-Share-Grade10-RW": [
+          "SG-MHS-Teachers"
+        ],
+        "DL-Share-Grade10-R": [
+          "SG-Grade10"
+        ]
+      },
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full",
+        "MAPLEWOOD\\DL-Share-Grade10-RW": "modify",
+        "MAPLEWOOD\\DL-Share-Grade10-R": "read"
+      },
+      "drive": {
+        "letter": "G",
+        "group": "SG-Grade10"
+      }
+    },
+    {
+      "name": "Grade11",
+      "path": "C:\\Shares\\Grade11",
+      "description": "Grade 11 class share (Maplewood High)",
+      "share_access": {
+        "BUILTIN\\Administrators": "Full",
+        "NT AUTHORITY\\Authenticated Users": "Change"
+      },
+      "groups": {
+        "DL-Share-Grade11-RW": [
+          "SG-MHS-Teachers"
+        ],
+        "DL-Share-Grade11-R": [
+          "SG-Grade11"
+        ]
+      },
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full",
+        "MAPLEWOOD\\DL-Share-Grade11-RW": "modify",
+        "MAPLEWOOD\\DL-Share-Grade11-R": "read"
+      },
+      "drive": {
+        "letter": "G",
+        "group": "SG-Grade11"
+      }
+    },
+    {
+      "name": "Grade12",
+      "path": "C:\\Shares\\Grade12",
+      "description": "Grade 12 class share (Maplewood High)",
+      "share_access": {
+        "BUILTIN\\Administrators": "Full",
+        "NT AUTHORITY\\Authenticated Users": "Change"
+      },
+      "groups": {
+        "DL-Share-Grade12-RW": [
+          "SG-MHS-Teachers"
+        ],
+        "DL-Share-Grade12-R": [
+          "SG-Grade12"
+        ]
+      },
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full",
+        "MAPLEWOOD\\DL-Share-Grade12-RW": "modify",
+        "MAPLEWOOD\\DL-Share-Grade12-R": "read"
+      },
+      "drive": {
+        "letter": "G",
+        "group": "SG-Grade12"
+      }
+    },
+    {
+      "name": "Scans",
+      "path": "C:\\Shares\\Scans",
+      "description": "Copier scan drop folder",
+      "share_access": {
+        "Everyone": "Full"
+      },
+      "groups": {},
+      "ntfs": {
+        "BUILTIN\\Administrators": "full",
+        "NT AUTHORITY\\SYSTEM": "full",
+        "Everyone": "full"
+      },
+      "seeded_weakness": "open to Everyone"
+    }
+  ],
+  "home_folders": [
+    {
+      "sam": "carmen.park",
+      "directory": "\\\\mwsrv01\\Home$\\carmen.park",
+      "drive": "H:"
+    },
+    {
+      "sam": "valeria.simmons",
+      "directory": "\\\\mwsrv01\\Home$\\valeria.simmons",
+      "drive": "H:"
+    },
+    {
+      "sam": "nadia.lee",
+      "directory": "\\\\mwsrv01\\Home$\\nadia.lee",
+      "drive": "H:"
+    },
+    {
+      "sam": "camila.morgan",
+      "directory": "\\\\mwsrv01\\Home$\\camila.morgan",
+      "drive": "H:"
+    },
+    {
+      "sam": "jose.james",
+      "directory": "\\\\mwsrv01\\Home$\\jose.james",
+      "drive": "H:"
+    },
+    {
+      "sam": "keisha.collins",
+      "directory": "\\\\mwsrv01\\Home$\\keisha.collins",
+      "drive": "H:"
+    },
+    {
+      "sam": "jordan.baker",
+      "directory": "\\\\mwsrv01\\Home$\\jordan.baker",
+      "drive": "H:"
+    },
+    {
+      "sam": "luna.wright",
+      "directory": "\\\\mwsrv01\\Home$\\luna.wright",
+      "drive": "H:"
+    },
+    {
+      "sam": "luis.martin",
+      "directory": "\\\\mwsrv01\\Home$\\luis.martin",
+      "drive": "H:"
+    },
+    {
+      "sam": "alejandro.kelly",
+      "directory": "\\\\mwsrv01\\Home$\\alejandro.kelly",
+      "drive": "H:"
+    },
+    {
+      "sam": "michael.ward",
+      "directory": "\\\\mwsrv01\\Home$\\michael.ward",
+      "drive": "H:"
+    },
+    {
+      "sam": "sub.omar.long",
+      "directory": "\\\\mwsrv01\\Home$\\sub.omar.long",
+      "drive": "H:"
+    },
+    {
+      "sam": "sub.paige.russell",
+      "directory": "\\\\mwsrv01\\Home$\\sub.paige.russell",
+      "drive": "H:"
+    },
+    {
+      "sam": "sub.david.turner",
+      "directory": "\\\\mwsrv01\\Home$\\sub.david.turner",
+      "drive": "H:"
+    },
+    {
+      "sam": "sub.rachel.wallace",
+      "directory": "\\\\mwsrv01\\Home$\\sub.rachel.wallace",
+      "drive": "H:"
+    },
+    {
+      "sam": "sub.jason.park",
+      "directory": "\\\\mwsrv01\\Home$\\sub.jason.park",
+      "drive": "H:"
+    },
+    {
+      "sam": "sub.isabella.torres",
+      "directory": "\\\\mwsrv01\\Home$\\sub.isabella.torres",
+      "drive": "H:"
+    },
+    {
+      "sam": "sub.jack.wright",
+      "directory": "\\\\mwsrv01\\Home$\\sub.jack.wright",
+      "drive": "H:"
+    },
+    {
+      "sam": "sub.nathan.alvarez",
+      "directory": "\\\\mwsrv01\\Home$\\sub.nathan.alvarez",
+      "drive": "H:"
+    },
+    {
+      "sam": "yara.coleman",
+      "directory": "\\\\mwsrv01\\Home$\\yara.coleman",
+      "drive": "H:"
+    },
+    {
+      "sam": "amelia.mendoza",
+      "directory": "\\\\mwsrv01\\Home$\\amelia.mendoza",
+      "drive": "H:"
+    },
+    {
+      "sam": "jose.wilson",
+      "directory": "\\\\mwsrv01\\Home$\\jose.wilson",
+      "drive": "H:"
+    },
+    {
+      "sam": "zoe.foster",
+      "directory": "\\\\mwsrv01\\Home$\\zoe.foster",
+      "drive": "H:"
+    },
+    {
+      "sam": "mason.green",
+      "directory": "\\\\mwsrv01\\Home$\\mason.green",
+      "drive": "H:"
+    },
+    {
+      "sam": "lucas.graham",
+      "directory": "\\\\mwsrv01\\Home$\\lucas.graham",
+      "drive": "H:"
+    },
+    {
+      "sam": "lucas.chavez",
+      "directory": "\\\\mwsrv01\\Home$\\lucas.chavez",
+      "drive": "H:"
+    },
+    {
+      "sam": "kiara.baker",
+      "directory": "\\\\mwsrv01\\Home$\\kiara.baker",
+      "drive": "H:"
+    },
+    {
+      "sam": "julia.nelson",
+      "directory": "\\\\mwsrv01\\Home$\\julia.nelson",
+      "drive": "H:"
+    },
+    {
+      "sam": "dominic.gray",
+      "directory": "\\\\mwsrv01\\Home$\\dominic.gray",
+      "drive": "H:"
+    },
+    {
+      "sam": "noah.kim",
+      "directory": "\\\\mwsrv01\\Home$\\noah.kim",
+      "drive": "H:"
+    },
+    {
+      "sam": "emily.hamilton",
+      "directory": "\\\\mwsrv01\\Home$\\emily.hamilton",
+      "drive": "H:"
+    },
+    {
+      "sam": "andre.torres",
+      "directory": "\\\\mwsrv01\\Home$\\andre.torres",
+      "drive": "H:"
+    },
+    {
+      "sam": "chloe.johnson",
+      "directory": "\\\\mwsrv01\\Home$\\chloe.johnson",
+      "drive": "H:"
+    },
+    {
+      "sam": "lucas.miller",
+      "directory": "\\\\mwsrv01\\Home$\\lucas.miller",
+      "drive": "H:"
+    },
+    {
+      "sam": "elijah.powell",
+      "directory": "\\\\mwsrv01\\Home$\\elijah.powell",
+      "drive": "H:"
+    },
+    {
+      "sam": "olivia.harris",
+      "directory": "\\\\mwsrv01\\Home$\\olivia.harris",
+      "drive": "H:"
+    },
+    {
+      "sam": "sebastian.mitchell",
+      "directory": "\\\\mwsrv01\\Home$\\sebastian.mitchell",
+      "drive": "H:"
+    },
+    {
+      "sam": "sophia.allen",
+      "directory": "\\\\mwsrv01\\Home$\\sophia.allen",
+      "drive": "H:"
+    },
+    {
+      "sam": "brandon.lewis",
+      "directory": "\\\\mwsrv01\\Home$\\brandon.lewis",
+      "drive": "H:"
+    },
+    {
+      "sam": "camila.castillo",
+      "directory": "\\\\mwsrv01\\Home$\\camila.castillo",
+      "drive": "H:"
+    },
+    {
+      "sam": "malik.long",
+      "directory": "\\\\mwsrv01\\Home$\\malik.long",
+      "drive": "H:"
+    },
+    {
+      "sam": "javier.graham",
+      "directory": "\\\\mwsrv01\\Home$\\javier.graham",
+      "drive": "H:"
+    },
+    {
+      "sam": "caroline.cooper",
+      "directory": "\\\\mwsrv01\\Home$\\caroline.cooper",
+      "drive": "H:"
+    },
+    {
+      "sam": "jada.taylor",
+      "directory": "\\\\mwsrv01\\Home$\\jada.taylor",
+      "drive": "H:"
+    },
+    {
+      "sam": "maria.ward",
+      "directory": "\\\\mwsrv01\\Home$\\maria.ward",
+      "drive": "H:"
+    },
+    {
+      "sam": "thomas.banks",
+      "directory": "\\\\mwsrv01\\Home$\\thomas.banks",
+      "drive": "H:"
+    },
+    {
+      "sam": "julia.gupta",
+      "directory": "\\\\mwsrv01\\Home$\\julia.gupta",
+      "drive": "H:"
+    },
+    {
+      "sam": "brooke.chavez",
+      "directory": "\\\\mwsrv01\\Home$\\brooke.chavez",
+      "drive": "H:"
+    },
+    {
+      "sam": "nadia.baker",
+      "directory": "\\\\mwsrv01\\Home$\\nadia.baker",
+      "drive": "H:"
+    },
+    {
+      "sam": "nadia.hernandez",
+      "directory": "\\\\mwsrv01\\Home$\\nadia.hernandez",
+      "drive": "H:"
+    },
+    {
+      "sam": "stella.gupta",
+      "directory": "\\\\mwsrv01\\Home$\\stella.gupta",
+      "drive": "H:"
+    },
+    {
+      "sam": "wyatt.scott",
+      "directory": "\\\\mwsrv01\\Home$\\wyatt.scott",
+      "drive": "H:"
+    },
+    {
+      "sam": "aaliyah.morgan",
+      "directory": "\\\\mwsrv01\\Home$\\aaliyah.morgan",
+      "drive": "H:"
+    },
+    {
+      "sam": "jackson.walker",
+      "directory": "\\\\mwsrv01\\Home$\\jackson.walker",
+      "drive": "H:"
+    },
+    {
+      "sam": "javier.banks",
+      "directory": "\\\\mwsrv01\\Home$\\javier.banks",
+      "drive": "H:"
+    },
+    {
+      "sam": "landon.rogers",
+      "directory": "\\\\mwsrv01\\Home$\\landon.rogers",
+      "drive": "H:"
+    },
+    {
+      "sam": "jada.jones",
+      "directory": "\\\\mwsrv01\\Home$\\jada.jones",
+      "drive": "H:"
+    },
+    {
+      "sam": "victoria.diaz",
+      "directory": "\\\\mwsrv01\\Home$\\victoria.diaz",
+      "drive": "H:"
+    },
+    {
+      "sam": "valeria.price",
+      "directory": "\\\\mwsrv01\\Home$\\valeria.price",
+      "drive": "H:"
+    },
+    {
+      "sam": "dana.whitfield",
+      "directory": "\\\\mwsrv01\\Home$\\dana.whitfield",
+      "drive": "H:"
+    },
+    {
+      "sam": "marcus.lee",
+      "directory": "\\\\mwsrv01\\Home$\\marcus.lee",
+      "drive": "H:"
+    },
+    {
+      "sam": "kevin.ortiz",
+      "directory": "\\\\mwsrv01\\Home$\\kevin.ortiz",
+      "drive": "H:"
+    },
+    {
+      "sam": "alicia.brooks",
+      "directory": "\\\\mwsrv01\\Home$\\alicia.brooks",
+      "drive": "H:"
+    },
+    {
+      "sam": "sam.nguyen",
+      "directory": "\\\\mwsrv01\\Home$\\sam.nguyen",
+      "drive": "H:"
+    },
+    {
+      "sam": "helen.carter",
+      "directory": "\\\\mwsrv01\\Home$\\helen.carter",
+      "drive": "H:"
+    },
+    {
+      "sam": "robert.diaz",
+      "directory": "\\\\mwsrv01\\Home$\\robert.diaz",
+      "drive": "H:"
+    },
+    {
+      "sam": "linda.okafor",
+      "directory": "\\\\mwsrv01\\Home$\\linda.okafor",
+      "drive": "H:"
+    }
+  ],
+  "password_policies": [
+    {
+      "name": "MW-Admins",
+      "precedence": 10,
+      "applies_to": [
+        "Domain Admins",
+        "SG-Technology"
+      ],
+      "min_length": 14,
+      "complexity": true,
+      "history": 24,
+      "max_age_days": 180,
+      "min_age_days": 0,
+      "lockout_threshold": 5,
+      "lockout_minutes": 30
+    },
+    {
+      "name": "MW-Staff",
+      "precedence": 20,
+      "applies_to": [
+        "SG-AllStaff"
+      ],
+      "min_length": 10,
+      "complexity": true,
+      "history": 10,
+      "max_age_days": 365,
+      "min_age_days": 0,
+      "lockout_threshold": 10,
+      "lockout_minutes": 30
+    },
+    {
+      "name": "MW-Students-Young",
+      "precedence": 25,
+      "applies_to": [
+        "SG-GradePK",
+        "SG-GradeK",
+        "SG-Grade01",
+        "SG-Grade02"
+      ],
+      "min_length": 4,
+      "complexity": false,
+      "history": 0,
+      "max_age_days": 0,
+      "min_age_days": 0,
+      "lockout_threshold": 0,
+      "lockout_minutes": 30
+    },
+    {
+      "name": "MW-Students",
+      "precedence": 30,
+      "applies_to": [
+        "SG-AllStudents"
+      ],
+      "min_length": 8,
+      "complexity": true,
+      "history": 5,
+      "max_age_days": 0,
+      "min_age_days": 0,
+      "lockout_threshold": 20,
+      "lockout_minutes": 30
+    }
+  ],
+  "gpos": [
+    {
+      "name": "MW Student Lockdown",
+      "links": [
+        "OU=Students,OU=Maplewood Elementary,DC=maplewoodusd,DC=local",
+        "OU=Students,OU=Maplewood Middle,DC=maplewoodusd,DC=local",
+        "OU=Students,OU=Maplewood High,DC=maplewoodusd,DC=local"
+      ],
+      "registry": [
+        {
+          "key": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer",
+          "value_name": "NoControlPanel",
+          "type": "DWord",
+          "value": 1
+        },
+        {
+          "key": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer",
+          "value_name": "NoRun",
+          "type": "DWord",
+          "value": 1
+        },
+        {
+          "key": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+          "value_name": "DisableRegistryTools",
+          "type": "DWord",
+          "value": 1
+        },
+        {
+          "key": "HKCU\\Software\\Policies\\Microsoft\\Windows\\System",
+          "value_name": "DisableCMD",
+          "type": "DWord",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "name": "MW Drive Maps",
+      "links": [
+        "DC=maplewoodusd,DC=local"
+      ],
+      "registry": [],
+      "drives": [
+        {
+          "letter": "P",
+          "path": "\\\\mwsrv01\\District",
+          "label": "District-wide documents",
+          "group": "SG-AllStaff"
+        },
+        {
+          "letter": "T",
+          "path": "\\\\mwsrv01\\Technology$",
+          "label": "Technology department",
+          "group": "SG-Technology"
+        },
+        {
+          "letter": "F",
+          "path": "\\\\mwsrv01\\Facilities$",
+          "label": "Facilities department",
+          "group": "SG-Facilities"
+        },
+        {
+          "letter": "S",
+          "path": "\\\\mwsrv01\\MES-Staff$",
+          "label": "Maplewood Elementary staff",
+          "group": "SG-MES-Staff"
+        },
+        {
+          "letter": "S",
+          "path": "\\\\mwsrv01\\MMS-Staff$",
+          "label": "Maplewood Middle staff",
+          "group": "SG-MMS-Staff"
+        },
+        {
+          "letter": "S",
+          "path": "\\\\mwsrv01\\MHS-Staff$",
+          "label": "Maplewood High staff",
+          "group": "SG-MHS-Staff"
+        },
+        {
+          "letter": "G",
+          "path": "\\\\mwsrv01\\GradePK",
+          "label": "Pre-K class share (Maplewood Elementary)",
+          "group": "SG-GradePK"
+        },
+        {
+          "letter": "G",
+          "path": "\\\\mwsrv01\\GradeK",
+          "label": "Kindergarten class share (Maplewood Elementary)",
+          "group": "SG-GradeK"
+        },
+        {
+          "letter": "G",
+          "path": "\\\\mwsrv01\\Grade01",
+          "label": "Grade 1 class share (Maplewood Elementary)",
+          "group": "SG-Grade01"
+        },
+        {
+          "letter": "G",
+          "path": "\\\\mwsrv01\\Grade02",
+          "label": "Grade 2 class share (Maplewood Elementary)",
+          "group": "SG-Grade02"
+        },
+        {
+          "letter": "G",
+          "path": "\\\\mwsrv01\\Grade03",
+          "label": "Grade 3 class share (Maplewood Elementary)",
+          "group": "SG-Grade03"
+        },
+        {
+          "letter": "G",
+          "path": "\\\\mwsrv01\\Grade04",
+          "label": "Grade 4 class share (Maplewood Elementary)",
+          "group": "SG-Grade04"
+        },
+        {
+          "letter": "G",
+          "path": "\\\\mwsrv01\\Grade05",
+          "label": "Grade 5 class share (Maplewood Elementary)",
+          "group": "SG-Grade05"
+        },
+        {
+          "letter": "G",
+          "path": "\\\\mwsrv01\\Grade06",
+          "label": "Grade 6 class share (Maplewood Middle)",
+          "group": "SG-Grade06"
+        },
+        {
+          "letter": "G",
+          "path": "\\\\mwsrv01\\Grade07",
+          "label": "Grade 7 class share (Maplewood Middle)",
+          "group": "SG-Grade07"
+        },
+        {
+          "letter": "G",
+          "path": "\\\\mwsrv01\\Grade08",
+          "label": "Grade 8 class share (Maplewood Middle)",
+          "group": "SG-Grade08"
+        },
+        {
+          "letter": "G",
+          "path": "\\\\mwsrv01\\Grade09",
+          "label": "Grade 9 class share (Maplewood High)",
+          "group": "SG-Grade09"
+        },
+        {
+          "letter": "G",
+          "path": "\\\\mwsrv01\\Grade10",
+          "label": "Grade 10 class share (Maplewood High)",
+          "group": "SG-Grade10"
+        },
+        {
+          "letter": "G",
+          "path": "\\\\mwsrv01\\Grade11",
+          "label": "Grade 11 class share (Maplewood High)",
+          "group": "SG-Grade11"
+        },
+        {
+          "letter": "G",
+          "path": "\\\\mwsrv01\\Grade12",
+          "label": "Grade 12 class share (Maplewood High)",
+          "group": "SG-Grade12"
+        }
+      ]
+    },
+    {
+      "name": "MW Audit Policy",
+      "links": [
+        "DC=maplewoodusd,DC=local"
+      ],
+      "registry": [
+        {
+          "key": "HKLM\\System\\CurrentControlSet\\Control\\Lsa",
+          "value_name": "SCENoApplyLegacyAuditPolicy",
+          "type": "DWord",
+          "value": 1
+        }
+      ],
+      "audit": [
+        {
+          "subcategory": "Logon",
+          "guid": "{0CCE9215-69AE-11D9-BED3-505054503030}",
+          "value": 3
+        },
+        {
+          "subcategory": "Logoff",
+          "guid": "{0CCE9216-69AE-11D9-BED3-505054503030}",
+          "value": 1
+        },
+        {
+          "subcategory": "Special Logon",
+          "guid": "{0CCE921B-69AE-11D9-BED3-505054503030}",
+          "value": 1
+        },
+        {
+          "subcategory": "Credential Validation",
+          "guid": "{0CCE923F-69AE-11D9-BED3-505054503030}",
+          "value": 3
+        },
+        {
+          "subcategory": "Kerberos Authentication Service",
+          "guid": "{0CCE9242-69AE-11D9-BED3-505054503030}",
+          "value": 3
+        },
+        {
+          "subcategory": "Kerberos Service Ticket Operations",
+          "guid": "{0CCE9240-69AE-11D9-BED3-505054503030}",
+          "value": 3
+        },
+        {
+          "subcategory": "User Account Management",
+          "guid": "{0CCE9235-69AE-11D9-BED3-505054503030}",
+          "value": 1
+        },
+        {
+          "subcategory": "Directory Service Access",
+          "guid": "{0CCE923B-69AE-11D9-BED3-505054503030}",
+          "value": 3
+        },
+        {
+          "subcategory": "File Share",
+          "guid": "{0CCE9224-69AE-11D9-BED3-505054503030}",
+          "value": 3
+        },
+        {
+          "subcategory": "Detailed File Share",
+          "guid": "{0CCE9244-69AE-11D9-BED3-505054503030}",
+          "value": 3
+        },
+        {
+          "subcategory": "File System",
+          "guid": "{0CCE921D-69AE-11D9-BED3-505054503030}",
+          "value": 3
+        },
+        {
+          "subcategory": "Process Creation",
+          "guid": "{0CCE922B-69AE-11D9-BED3-505054503030}",
+          "value": 1
+        }
+      ]
+    }
+  ],
+  "student_logon_hours": {
+    "days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri"
+    ],
+    "start": 7,
+    "end": 16,
+    "utc_offset": -8
+  },
+  "replication_rights": [
+    "svc-gsync"
+  ],
+  "logon_script": {
+    "filename": "logon.bat",
+    "netlogon_path": "C:\\Windows\\SYSVOL\\domain\\scripts\\logon.bat",
+    "embeds": "svc-copier",
+    "accounts": [
+      "carmen.park",
+      "valeria.simmons",
+      "nadia.lee",
+      "camila.morgan",
+      "jose.james",
+      "keisha.collins",
+      "jordan.baker",
+      "luna.wright",
+      "luis.martin",
+      "alejandro.kelly",
+      "michael.ward",
+      "sub.omar.long",
+      "sub.paige.russell",
+      "sub.david.turner",
+      "sub.rachel.wallace",
+      "sub.jason.park",
+      "sub.isabella.torres",
+      "sub.jack.wright",
+      "sub.nathan.alvarez",
+      "yara.coleman",
+      "amelia.mendoza",
+      "jose.wilson",
+      "zoe.foster",
+      "mason.green",
+      "lucas.graham",
+      "lucas.chavez",
+      "kiara.baker",
+      "julia.nelson",
+      "dominic.gray",
+      "noah.kim",
+      "emily.hamilton",
+      "andre.torres",
+      "chloe.johnson",
+      "lucas.miller",
+      "elijah.powell",
+      "olivia.harris",
+      "sebastian.mitchell",
+      "sophia.allen",
+      "brandon.lewis",
+      "camila.castillo",
+      "malik.long",
+      "javier.graham",
+      "caroline.cooper",
+      "jada.taylor",
+      "maria.ward",
+      "thomas.banks",
+      "julia.gupta",
+      "brooke.chavez",
+      "nadia.baker",
+      "nadia.hernandez",
+      "stella.gupta",
+      "wyatt.scott",
+      "aaliyah.morgan",
+      "jackson.walker",
+      "javier.banks",
+      "landon.rogers",
+      "jada.jones",
+      "victoria.diaz",
+      "valeria.price"
+    ]
+  },
+  "service_accounts": [
+    {
+      "sam": "svc-sis",
+      "weakness": "kerberoast",
+      "dcsync": false
+    },
+    {
+      "sam": "svc-copier",
+      "weakness": "password_in_description",
+      "dcsync": false
+    },
+    {
+      "sam": "svc-gsync",
+      "weakness": "",
+      "dcsync": true
+    },
+    {
+      "sam": "svc-hvac",
+      "weakness": "vendor_rdp",
+      "dcsync": false
+    }
+  ],
+  "honey_accounts": [
+    "svc-superadmin"
+  ],
+  "sis": {
+    "host": "srv01",
+    "db_name": "MapleGrade",
+    "service_account": "svc-sis"
+  },
+  "adcs": {
+    "ca_host": "dc01",
+    "template": "MapleWood-WiFi-User"
+  },
+  "elk": {
+    "ip": 50,
+    "elasticsearch_port": 9200,
+    "kibana_port": 5601,
+    "agents": [
+      "winlogbeat",
+      "sysmon64"
+    ],
+    "log_hosts": [
+      "dc01",
+      "ws01",
+      "srv01",
+      "ws02"
+    ]
+  }
+}

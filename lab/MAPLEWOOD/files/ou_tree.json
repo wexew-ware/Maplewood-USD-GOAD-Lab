@@ -1,0 +1,247 @@
+[
+  {
+    "name": "District Office",
+    "path": "DC=maplewoodusd,DC=local",
+    "dn": "OU=District Office,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Administration",
+    "path": "OU=District Office,DC=maplewoodusd,DC=local",
+    "dn": "OU=Administration,OU=District Office,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Technology",
+    "path": "OU=District Office,DC=maplewoodusd,DC=local",
+    "dn": "OU=Technology,OU=District Office,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Facilities",
+    "path": "OU=District Office,DC=maplewoodusd,DC=local",
+    "dn": "OU=Facilities,OU=District Office,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Substitutes",
+    "path": "OU=District Office,DC=maplewoodusd,DC=local",
+    "dn": "OU=Substitutes,OU=District Office,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Servers",
+    "path": "OU=District Office,DC=maplewoodusd,DC=local",
+    "dn": "OU=Servers,OU=District Office,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Maplewood Elementary",
+    "path": "DC=maplewoodusd,DC=local",
+    "dn": "OU=Maplewood Elementary,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Staff",
+    "path": "OU=Maplewood Elementary,DC=maplewoodusd,DC=local",
+    "dn": "OU=Staff,OU=Maplewood Elementary,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Teachers",
+    "path": "OU=Staff,OU=Maplewood Elementary,DC=maplewoodusd,DC=local",
+    "dn": "OU=Teachers,OU=Staff,OU=Maplewood Elementary,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Support Staff",
+    "path": "OU=Staff,OU=Maplewood Elementary,DC=maplewoodusd,DC=local",
+    "dn": "OU=Support Staff,OU=Staff,OU=Maplewood Elementary,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Students",
+    "path": "OU=Maplewood Elementary,DC=maplewoodusd,DC=local",
+    "dn": "OU=Students,OU=Maplewood Elementary,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "GradePK",
+    "path": "OU=Students,OU=Maplewood Elementary,DC=maplewoodusd,DC=local",
+    "dn": "OU=GradePK,OU=Students,OU=Maplewood Elementary,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "GradeK",
+    "path": "OU=Students,OU=Maplewood Elementary,DC=maplewoodusd,DC=local",
+    "dn": "OU=GradeK,OU=Students,OU=Maplewood Elementary,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Grade01",
+    "path": "OU=Students,OU=Maplewood Elementary,DC=maplewoodusd,DC=local",
+    "dn": "OU=Grade01,OU=Students,OU=Maplewood Elementary,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Grade02",
+    "path": "OU=Students,OU=Maplewood Elementary,DC=maplewoodusd,DC=local",
+    "dn": "OU=Grade02,OU=Students,OU=Maplewood Elementary,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Grade03",
+    "path": "OU=Students,OU=Maplewood Elementary,DC=maplewoodusd,DC=local",
+    "dn": "OU=Grade03,OU=Students,OU=Maplewood Elementary,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Grade04",
+    "path": "OU=Students,OU=Maplewood Elementary,DC=maplewoodusd,DC=local",
+    "dn": "OU=Grade04,OU=Students,OU=Maplewood Elementary,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Grade05",
+    "path": "OU=Students,OU=Maplewood Elementary,DC=maplewoodusd,DC=local",
+    "dn": "OU=Grade05,OU=Students,OU=Maplewood Elementary,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Computers",
+    "path": "OU=Maplewood Elementary,DC=maplewoodusd,DC=local",
+    "dn": "OU=Computers,OU=Maplewood Elementary,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Staff Workstations",
+    "path": "OU=Computers,OU=Maplewood Elementary,DC=maplewoodusd,DC=local",
+    "dn": "OU=Staff Workstations,OU=Computers,OU=Maplewood Elementary,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Student Labs",
+    "path": "OU=Computers,OU=Maplewood Elementary,DC=maplewoodusd,DC=local",
+    "dn": "OU=Student Labs,OU=Computers,OU=Maplewood Elementary,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Maplewood Middle",
+    "path": "DC=maplewoodusd,DC=local",
+    "dn": "OU=Maplewood Middle,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Staff",
+    "path": "OU=Maplewood Middle,DC=maplewoodusd,DC=local",
+    "dn": "OU=Staff,OU=Maplewood Middle,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Teachers",
+    "path": "OU=Staff,OU=Maplewood Middle,DC=maplewoodusd,DC=local",
+    "dn": "OU=Teachers,OU=Staff,OU=Maplewood Middle,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Support Staff",
+    "path": "OU=Staff,OU=Maplewood Middle,DC=maplewoodusd,DC=local",
+    "dn": "OU=Support Staff,OU=Staff,OU=Maplewood Middle,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Students",
+    "path": "OU=Maplewood Middle,DC=maplewoodusd,DC=local",
+    "dn": "OU=Students,OU=Maplewood Middle,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Grade06",
+    "path": "OU=Students,OU=Maplewood Middle,DC=maplewoodusd,DC=local",
+    "dn": "OU=Grade06,OU=Students,OU=Maplewood Middle,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Grade07",
+    "path": "OU=Students,OU=Maplewood Middle,DC=maplewoodusd,DC=local",
+    "dn": "OU=Grade07,OU=Students,OU=Maplewood Middle,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Grade08",
+    "path": "OU=Students,OU=Maplewood Middle,DC=maplewoodusd,DC=local",
+    "dn": "OU=Grade08,OU=Students,OU=Maplewood Middle,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Computers",
+    "path": "OU=Maplewood Middle,DC=maplewoodusd,DC=local",
+    "dn": "OU=Computers,OU=Maplewood Middle,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Staff Workstations",
+    "path": "OU=Computers,OU=Maplewood Middle,DC=maplewoodusd,DC=local",
+    "dn": "OU=Staff Workstations,OU=Computers,OU=Maplewood Middle,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Student Labs",
+    "path": "OU=Computers,OU=Maplewood Middle,DC=maplewoodusd,DC=local",
+    "dn": "OU=Student Labs,OU=Computers,OU=Maplewood Middle,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Maplewood High",
+    "path": "DC=maplewoodusd,DC=local",
+    "dn": "OU=Maplewood High,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Staff",
+    "path": "OU=Maplewood High,DC=maplewoodusd,DC=local",
+    "dn": "OU=Staff,OU=Maplewood High,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Teachers",
+    "path": "OU=Staff,OU=Maplewood High,DC=maplewoodusd,DC=local",
+    "dn": "OU=Teachers,OU=Staff,OU=Maplewood High,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Support Staff",
+    "path": "OU=Staff,OU=Maplewood High,DC=maplewoodusd,DC=local",
+    "dn": "OU=Support Staff,OU=Staff,OU=Maplewood High,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Students",
+    "path": "OU=Maplewood High,DC=maplewoodusd,DC=local",
+    "dn": "OU=Students,OU=Maplewood High,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Grade09",
+    "path": "OU=Students,OU=Maplewood High,DC=maplewoodusd,DC=local",
+    "dn": "OU=Grade09,OU=Students,OU=Maplewood High,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Grade10",
+    "path": "OU=Students,OU=Maplewood High,DC=maplewoodusd,DC=local",
+    "dn": "OU=Grade10,OU=Students,OU=Maplewood High,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Grade11",
+    "path": "OU=Students,OU=Maplewood High,DC=maplewoodusd,DC=local",
+    "dn": "OU=Grade11,OU=Students,OU=Maplewood High,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Grade12",
+    "path": "OU=Students,OU=Maplewood High,DC=maplewoodusd,DC=local",
+    "dn": "OU=Grade12,OU=Students,OU=Maplewood High,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Computers",
+    "path": "OU=Maplewood High,DC=maplewoodusd,DC=local",
+    "dn": "OU=Computers,OU=Maplewood High,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Staff Workstations",
+    "path": "OU=Computers,OU=Maplewood High,DC=maplewoodusd,DC=local",
+    "dn": "OU=Staff Workstations,OU=Computers,OU=Maplewood High,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Student Labs",
+    "path": "OU=Computers,OU=Maplewood High,DC=maplewoodusd,DC=local",
+    "dn": "OU=Student Labs,OU=Computers,OU=Maplewood High,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Groups",
+    "path": "DC=maplewoodusd,DC=local",
+    "dn": "OU=Groups,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Service Accounts",
+    "path": "DC=maplewoodusd,DC=local",
+    "dn": "OU=Service Accounts,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Disabled",
+    "path": "DC=maplewoodusd,DC=local",
+    "dn": "OU=Disabled,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Graduated",
+    "path": "OU=Disabled,DC=maplewoodusd,DC=local",
+    "dn": "OU=Graduated,OU=Disabled,DC=maplewoodusd,DC=local"
+  },
+  {
+    "name": "Former Staff",
+    "path": "OU=Disabled,DC=maplewoodusd,DC=local",
+    "dn": "OU=Former Staff,OU=Disabled,DC=maplewoodusd,DC=local"
+  }
+]

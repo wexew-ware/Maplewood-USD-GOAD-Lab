@@ -1,0 +1,94 @@
+---
+# File server: share folders with protected NTFS permissions (AGDLP: the DL-Share-* groups hold
+# the rights), SMB shares, and one home folder per staff account under the home share.
+# NTFS and share permissions are converged to exactly what resources.json lists.
+
+- name: Read the MapleWood resources
+  ansible.builtin.set_fact:
+    mw_resources: "{{ lookup('ansible.builtin.file', mw_resources_file) | from_json }}"
+
+- name: Create share folders, NTFS permissions, SMB shares and home folders
+  ansible.windows.win_powershell:
+    parameters:
+      shares_json: "{{ mw_resources.shares | to_json }}"
+      homes_json: "{{ mw_resources.home_folders | to_json }}"
+      netbios: "{{ mw_netbios }}"
+    script: |
+      [CmdletBinding()]
+      param ([String] $shares_json, [String] $homes_json, [String] $netbios)
+      $ErrorActionPreference = 'Stop'
+      $Ansible.Changed = $false
+      $levels = @{ full = 'FullControl'; modify = 'Modify'; read = 'ReadAndExecute' }
+      $inherit = [System.Security.AccessControl.InheritanceFlags]'ContainerInherit, ObjectInherit'
+      $noProp = [System.Security.AccessControl.PropagationFlags]::None
+      $changes = New-Object System.Collections.ArrayList
+
+      # Make $path's DACL exactly $entries (identity -> full|modify|read), with inheritance from the parent cut.
+      function Set-MwAcl([String] $path, [hashtable] $entries) {
+        if (-not (Test-Path -LiteralPath $path)) {
+          New-Item -ItemType Directory -Path $path -Force | Out-Null
+          [void]$changes.Add("created $path")
+        }
+        $acl = Get-Acl -LiteralPath $path
+        $before = $acl.GetSecurityDescriptorSddlForm('Access')
+        $acl.SetAccessRuleProtection($true, $false)
+        foreach ($rule in @($acl.GetAccessRules($true, $false, [System.Security.Principal.SecurityIdentifier]))) {
+          [void]$acl.RemoveAccessRuleSpecific($rule)
+        }
+        foreach ($id in ($entries.Keys | Sort-Object)) {
+          $acl.AddAccessRule((New-Object System.Security.AccessControl.FileSystemAccessRule($id, $levels[$entries[$id]], $inherit, $noProp, 'Allow')))
+        }
+        if ($acl.GetSecurityDescriptorSddlForm('Access') -ne $before) {
+          Set-Acl -LiteralPath $path -AclObject $acl
+          [void]$changes.Add("NTFS $path")
+        }
+      }
+
+      $shares = @($shares_json | ConvertFrom-Json | ForEach-Object { $_ })
+      foreach ($s in $shares) {
+        $ntfs = @{}
+        foreach ($p in $s.ntfs.PSObject.Properties) { $ntfs[$p.Name] = $p.Value }
+        Set-MwAcl $s.path $ntfs
+
+        $want = @{}
+        foreach ($p in $s.share_access.PSObject.Properties) { $want[$p.Name] = $p.Value }
+        $share = Get-SmbShare -Name $s.name -ErrorAction SilentlyContinue
+        if (-not $share) {
+          $newShare = @{ Name = $s.name; Path = $s.path; Description = $s.description }
+          foreach ($right in 'Full', 'Change', 'Read') {
+            $who = @($want.Keys | Where-Object { $want[$_] -eq $right })
+            if ($who.Count) { $newShare["${right}Access"] = $who }
+          }
+          # Access-based enumeration on the home share: each user only sees their own folder.
+          if ($s.home) { $newShare.FolderEnumerationMode = 'AccessBased' }
+          New-SmbShare @newShare | Out-Null
+          [void]$changes.Add("share $($s.name)")
+        } else {
+          $have = @{}
+          foreach ($a in Get-SmbShareAccess -Name $s.name) { if ($a.AccessControlType -eq 'Allow') { $have[$a.AccountName] = "$($a.AccessRight)" } }
+          foreach ($who in $have.Keys) {
+            if (-not $want.ContainsKey($who)) { Revoke-SmbShareAccess -Name $s.name -AccountName $who -Force | Out-Null; [void]$changes.Add("revoke $who on $($s.name)") }
+          }
+          foreach ($who in $want.Keys) {
+            if ($have[$who] -ne $want[$who]) { Grant-SmbShareAccess -Name $s.name -AccountName $who -AccessRight $want[$who] -Force | Out-Null; [void]$changes.Add("grant $who on $($s.name)") }
+          }
+        }
+      }
+
+      $homeShare = $shares | Where-Object { $_.home } | Select-Object -First 1
+      $homes = @($homes_json | ConvertFrom-Json | ForEach-Object { $_ })
+      if ($homeShare) {
+        foreach ($h in $homes) {
+          Set-MwAcl (Join-Path $homeShare.path $h.sam) @{
+            'BUILTIN\Administrators' = 'full'; 'NT AUTHORITY\SYSTEM' = 'full'; "$netbios\$($h.sam)" = 'modify'
+          }
+        }
+      }
+
+      $Ansible.Changed = $changes.Count -gt 0
+      $Ansible.Result = @{ shares = $shares.Count; home_folders = $homes.Count; changes = @($changes) }
+  register: mw_shares_result
+
+- name: Report file shares
+  ansible.builtin.debug:
+    msg: "{{ mw_shares_result.result.shares }} shares, {{ mw_shares_result.result.home_folders }} home folders, {{ mw_shares_result.result.changes | length }} changes"

@@ -1,0 +1,39 @@
+# MapleWood USD: keep the Windows evaluation licence in date, unattended.
+# Installed and scheduled by the mw_rearm role (runs as SYSTEM at startup and daily). It rearms only
+# when the evaluation is expired or within {{ mw_rearm_below_days }} days, sets SkipRearm first so the
+# rearm count is never consumed (making rearming effectively indefinite), then reboots to apply.
+# Activated or comfortably-in-date hosts are left completely alone. Do not edit on the guest; it is
+# regenerated from ansible/roles/mw_rearm/templates/rearm.ps1.j2.
+$ErrorActionPreference = 'Stop'
+$log = '{{ mw_rearm_log }}'
+function Write-Log($m) { "{0}  {1}" -f (Get-Date -Format s), $m | Out-File -FilePath $log -Append -Encoding utf8 }
+
+try {
+    $p = Get-CimInstance SoftwareLicensingProduct |
+         Where-Object { $_.PartialProductKey -and $_.Name -like 'Windows*' } | Select-Object -First 1
+    if (-not $p) { Write-Log 'no licensed Windows product found; nothing to do'; return }
+    if ($p.Description -notmatch 'EVAL') { Write-Log "not an evaluation ($($p.Description)); nothing to do"; return }
+
+    $graceDays = [int]($p.GracePeriodRemaining / 1440)
+    # LicenseStatus 1 = licensed (the evaluation clock is running); anything else means expired.
+    if ($p.LicenseStatus -eq 1 -and $graceDays -ge {{ mw_rearm_below_days }}) {
+        Write-Log "ok: status $($p.LicenseStatus), $graceDays days left"; return
+    }
+
+    $left = [int](Get-CimInstance SoftwareLicensingService).RemainingWindowsReArmCount
+    # SkipRearm=1 lets the rearm run without decrementing the remaining rearm count (it resets to 0
+    # by itself afterwards), so the lab never runs out of rearms.
+    Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SoftwareProtectionPlatform' `
+                     -Name SkipRearm -Value 1 -Type DWord
+    $rc = (Start-Process cscript.exe -ArgumentList '//B','//NoLogo','C:\Windows\System32\slmgr.vbs','/rearm' `
+           -Wait -PassThru).ExitCode
+    if ($rc -eq 0) {
+        Write-Log "rearmed (was status $($p.LicenseStatus), $graceDays days, rearms-left $left, SkipRearm set); rebooting in 2 min"
+        # Only reboot on success, so a failing rearm can never put the box in a reboot loop.
+        shutdown.exe /r /t 120 /c 'MapleWood: applying Windows evaluation rearm'
+    } else {
+        Write-Log "ERROR: slmgr /rearm returned $rc (rearms-left $left); not rebooting"
+    }
+} catch {
+    Write-Log "ERROR: $($_.Exception.Message)"
+}

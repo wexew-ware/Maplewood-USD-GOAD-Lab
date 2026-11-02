@@ -1,0 +1,52 @@
+---
+# MapleWood USD: district data that GOAD's stock roles do not cover.
+# Runs after ad-data.yml (groups, DL-Share-* groups and story accounts exist) and before
+# ad-acl.yml (which applies the helpdesk delegation from config.json).
+# Phase 1: bulk staff and students. Phase 2: password policies, home folders, file shares, GPOs.
+
+- import_playbook: data.yml
+  vars:
+    data_path: "../ad/{{domain_name}}/data/"
+  tags: 'data'
+
+- name: MapleWood bulk users
+  hosts: dc
+  roles:
+    - { role: 'mw_bulk_users', tags: 'mw_bulk_users' }
+  vars:
+    mw_domain: "{{ lab.hosts[dict_key].domain }}"
+
+- name: MapleWood password policies and home folder attributes
+  hosts: dc
+  roles:
+    - { role: 'mw_fgpp', tags: 'mw_fgpp' }
+    - { role: 'mw_home', tags: 'mw_home' }
+
+- name: MapleWood file shares and home folders
+  hosts: mw_fileserver
+  roles:
+    - { role: 'mw_shares', tags: 'mw_shares' }
+  vars:
+    mw_netbios: "{{ lab.domains[lab.hosts[dict_key].domain].netbios_name }}"
+
+- name: MapleWood group policy
+  hosts: dc
+  roles:
+    - { role: 'mw_gpo', tags: 'mw_gpo' }
+  vars:
+    mw_netbios: "{{ lab.domains[lab.hosts[dict_key].domain].netbios_name }}"
+
+- name: MapleWood replication rights (DCSync for the sync account)
+  hosts: dc
+  roles:
+    - { role: 'mw_replication', tags: 'mw_replication' }
+
+- name: Apply computer policy so the audit settings take effect
+  hosts: domain
+  gather_facts: false
+  tags: 'gpupdate'
+  tasks:
+    - name: gpupdate /target:computer /force
+      ansible.windows.win_command: gpupdate /target:computer /force
+      changed_when: false
+      failed_when: false

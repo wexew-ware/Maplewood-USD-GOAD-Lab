@@ -1,0 +1,66 @@
+# MapleWood USD — standalone Kali attacker box.
+#
+# This is DELIBERATELY independent of GOAD. It is not part of the GOAD instance, so `goad reset`,
+# GOAD snapshots and rebuilds never touch it: your tooling and loot survive a lab reset. It only
+# shares the lab's existing host-only network (vboxnet0, 192.168.56.0/24) so it can reach the hosts,
+# plus the default NAT adapter for internet (apt / tool updates).
+#
+#   cd attacker && vagrant up        # first run downloads the Kali box (~10 GB)
+#   vagrant ssh                      # into the box (user: vagrant / pass: vagrant)
+#   vagrant halt / vagrant up        # stop to free ~3 GB RAM / start again
+#   vagrant destroy                  # remove it entirely
+#
+# Headless/CLI by design (no desktop). The base box is minimal; install tooling with apt, e.g.:
+#   sudo apt update && sudo apt install -y netexec nmap bloodhound.py python3-impacket
+#
+# Lab reachability from here: DC01 192.168.56.30, WS01 .31, SRV01 .32, WS02 .33, ELK .50.
+# Domain maplewoodusd.local / MAPLEWOOD. This box is 192.168.56.99.
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "kalilinux/rolling"
+  config.vm.hostname = "maplewood-kali"
+
+  # Static IP on the lab's existing host-only net; .99 is outside GOAD's .30-.50 range.
+  config.vm.network :private_network, ip: "192.168.56.99"
+
+  # The Kali box ships no VirtualBox Guest Additions, so skip the synced folder (it would need them).
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  # Don't run vagrant-vbguest: we need no Guest Additions, and its 0.32.0 release crashes on Ruby 3.3+
+  # (File.exists? was removed), which otherwise fails `vagrant up` after the box has already booted.
+  config.vbguest.auto_update = false if Vagrant.has_plugin?("vagrant-vbguest")
+
+  # DNS: point the box at the lab's DC so maplewoodusd.local and its SRV records (which the
+  # Kerberos tooling needs) resolve. NetworkManager is set dns=none so it never rewrites
+  # /etc/resolv.conf on boot. The DC (192.168.56.30) is authoritative for the domain and also
+  # recurses to the internet; 10.0.2.3 (VirtualBox's NAT DNS) stays as a timeout failover so apt
+  # keeps working even if the DC is down. /etc/hosts gets the same names as an offline fallback.
+  # Runs on every `vagrant up`/`reload`, after the network comes up, and is idempotent.
+  config.vm.provision "maplewood-dns", type: "shell", run: "always", inline: <<-'SHELL'
+    install -d -m 755 /etc/NetworkManager/conf.d
+    printf '[main]\ndns=none\n' > /etc/NetworkManager/conf.d/90-maplewood-dns.conf
+    printf '%s\n' \
+      '# MapleWood lab resolver (managed by the Vagrantfile; NetworkManager dns=none).' \
+      'search maplewoodusd.local' \
+      'nameserver 192.168.56.30' \
+      'nameserver 10.0.2.3' > /etc/resolv.conf
+    if ! grep -q 'MapleWood lab' /etc/hosts; then
+      printf '%s\n' \
+        '' \
+        '# --- MapleWood lab (offline fallback; DNS via the DC is primary) ---' \
+        '192.168.56.30 mwdc01.maplewoodusd.local mwdc01' \
+        '192.168.56.31 mhs-staff01.maplewoodusd.local mhs-staff01' \
+        '192.168.56.32 mwsrv01.maplewoodusd.local mwsrv01 maplegrade.maplewoodusd.local maplegrade' \
+        '192.168.56.33 mms-lab01.maplewoodusd.local mms-lab01' \
+        '192.168.56.50 elk.maplewoodusd.local elk' >> /etc/hosts
+    fi
+    systemctl reload NetworkManager 2>/dev/null || systemctl restart NetworkManager || true
+  SHELL
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.name = "MAPLEWOOD-KALI"
+    vb.memory = 3072
+    vb.cpus = 2
+    vb.gui = false
+  end
+end

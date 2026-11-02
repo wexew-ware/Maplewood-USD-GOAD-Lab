@@ -1,0 +1,2 @@
+---
+mw_resources_file: "{{ playbook_dir }}/../ad/{{ domain_name }}/files/resources.json"

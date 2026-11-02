@@ -1,0 +1,254 @@
+# MapleWood USD scenario definition.
+# This is the one file instructors edit. After a change, run:
+#   python3 generator/generate.py
+# The generator is deterministic: the same seed always produces the same lab.
+# Every name is synthetic. Never put real student or staff data in here.
+
+seed: 2026
+domain: maplewoodusd.local
+netbios: MAPLEWOOD
+# Password of the domain Administrator (also the DC's local admin password).
+domain_password: "Mw8dCT-Maple26"
+
+# Graduation year of the current Grade 12 class (school year 2026-27).
+school_year_end: 2027
+# Named substitute accounts expire at the end of the term.
+term_end: "2027-06-15"
+
+mail_domains:
+  staff: maplewoodusd.org
+  students: students.maplewoodusd.org
+
+district_office:
+  name: District Office
+  # Counts include the story accounts below.
+  administration: 6
+  technology: 4
+  facilities: 6
+
+substitutes:
+  named: 8
+  pool: 10                          # shared accounts sub01..sub10
+  pool_password: "Substitute2026!"  # one shared password, as in many districts
+
+schools:
+  - {name: Maplewood Elementary, code: MES, grades: [PK, K, 1, 2, 3, 4, 5]}
+  - {name: Maplewood Middle,     code: MMS, grades: [6, 7, 8]}
+  - {name: Maplewood High,       code: MHS, grades: [9, 10, 11, 12]}
+
+per_school:
+  principals: 1      # counts include the story principals below
+  support_staff: 4
+
+students_per_grade: 25
+teachers_per_grade: 2
+
+# Grades whose accounts exist but cannot sign in (no permitted logon hours).
+no_logon_grades: [PK, K]
+
+passwords:
+  weak_staff_ratio: 0.1          # share of generated staff with guessable passwords
+  weak_staff_list: ["Fall2026!", "Summer2026!", "Maplewood1!", "Welcome2026!", "Teacher1!", "Password1!"]
+  young_student_grades: [PK, K, 1, 2]   # short word + 2 digits, e.g. tiger12
+  # Grades 3 and up: "Maple" + student ID, e.g. Maple104237 (predictable on purpose)
+
+stale_accounts:
+  graduated_total: 25        # class of school_year_end - 1, in Disabled/Graduated
+  graduated_enabled: 5       # left enabled (seeded weakness)
+  former_staff_total: 8      # in Disabled/Former Staff
+  former_staff_enabled: 3    # left enabled and still in their old groups (seeded weakness)
+
+# Fixed "story" accounts that lessons refer to by name. These go into
+# config.json and are created by GOAD's stock ad-data.yml step.
+story_accounts:
+  - {sam: dana.whitfield, first: Dana, last: Whitfield, role: administration, title: Superintendent, password: "Cedar-Harbor-2219"}
+  - {sam: marcus.lee, first: Marcus, last: Lee, role: technology, title: Director of Technology, password: "Summit-Falcon-8841"}
+  - {sam: adm.marcus.lee, first: Marcus, last: Lee, role: technology, title: Director of Technology (admin account), password: "Qv7!mWz2-Lk9#Tr4", groups: [Domain Admins], counted: false}
+  - {sam: kevin.ortiz, first: Kevin, last: Ortiz, role: technology, school: MES, title: Building Technician, helpdesk: true, password: "Birch-River-5530"}
+  - {sam: alicia.brooks, first: Alicia, last: Brooks, role: technology, school: MMS, title: Building Technician, helpdesk: true, password: "Aspen-Meadow-7716"}
+  - {sam: sam.nguyen, first: Sam, last: Nguyen, role: technology, school: MHS, title: Building Technician, helpdesk: true, password: "Willow-Canyon-3302"}
+  - {sam: helen.carter, first: Helen, last: Carter, role: principal, school: MES, title: Principal, password: "Maple-Lantern-6148"}
+  - {sam: robert.diaz, first: Robert, last: Diaz, role: principal, school: MMS, title: Principal, password: "Granite-Orchard-9025"}
+  - {sam: linda.okafor, first: Linda, last: Okafor, role: principal, school: MHS, title: Principal, password: "Coral-Prairie-4470"}
+
+# --- Phase 2: resources --------------------------------------------------------------------
+
+# Logon-hour schedules are stored in UTC, so they are computed with this offset (standard
+# time; as in ADUC, a schedule shifts by an hour during daylight saving time).
+utc_offset: -8                  # Pacific Standard Time, the lab boxes' time zone
+
+# Students outside no_logon_grades may only sign in during school hours (local time).
+student_logon_hours: {days: [Mon, Tue, Wed, Thu, Fri], start: 7, end: 16}
+
+file_server:
+  host: srv01
+  root: 'C:\Shares'
+  home_drive: "H:"
+  # Seeded weakness: the copier scan-drop share is open to Everyone.
+  open_share: Scans
+
+helpdesk:
+  # Each school's SG-<code>-HelpDesk group can reset that school's student passwords.
+  # Seeded weakness: this school's helpdesk can also reset staff passwords in every school.
+  overbroad: MHS
+
+# Fine-grained password policies; the lowest precedence wins. They apply when a password
+# next changes, so accounts keep the passwords the generator gave them.
+password_policies:
+  - {name: MW-Admins, precedence: 10, applies_to: [Domain Admins, SG-Technology],
+     min_length: 14, complexity: true, history: 24, max_age_days: 180, lockout_threshold: 5}
+  - {name: MW-Staff, precedence: 20, applies_to: [SG-AllStaff],
+     min_length: 10, complexity: true, history: 10, max_age_days: 365, lockout_threshold: 10}
+  # Seeded weakness: young students get short, simple passwords and no lockout.
+  - {name: MW-Students-Young, precedence: 25, applies_to_grades: [PK, K, 1, 2],
+     min_length: 4, complexity: false, history: 0, max_age_days: 0, lockout_threshold: 0}
+  - {name: MW-Students, precedence: 30, applies_to: [SG-AllStudents],
+     min_length: 8, complexity: true, history: 5, max_age_days: 0, lockout_threshold: 20}
+
+# --- Phase 3: service accounts and seeded weaknesses ---------------------------------------
+
+# Service accounts go in OU=Service Accounts and are created by GOAD's ad-data.yml (which
+# registers SPNs). Each line below also seeds one realistic district weakness.
+service_accounts:
+  # Kerberoastable: an SPN on an account with a weak, crackable password.
+  - {sam: svc-sis, first: MapleGrade, last: Service, password: "Summer2025",
+     spns: ["MSSQLSvc/mwsrv01.maplewoodusd.local:1433", "HTTP/maplegrade.maplewoodusd.local"],
+     groups: [SG-SIS-Admins], weakness: kerberoast,
+     description: "MapleGrade student information system (MSSQL/IIS on SRV01)"}
+  # Copier scan-to-folder account with its password written in the description field.
+  - {sam: svc-copier, first: Copier, last: Service, password: "Konica#Scan7",
+     weakness: password_in_description,
+     description: "Konica C658 scan-to-folder. user svc-copier / pass Konica#Scan7 - front office copier"}
+  # Google Workspace / Entra directory sync account, over-privileged with DCSync rights.
+  - {sam: svc-gsync, first: Directory, last: Sync, password: "Gsync-Maple-6621", dcsync: true,
+     description: "Google Workspace directory sync (GCDS) - password hash sync"}
+  # Third-party HVAC/BMS vendor account: never expires and allowed to RDP to the server.
+  - {sam: svc-hvac, first: Trane, last: Vendor, password: "Tr@neBMS-2026", weakness: vendor_rdp,
+     description: "Trane building automation vendor remote access - do not disable"}
+
+# Decoy. Looks like a privileged superintendent account but grants nothing; any logon or
+# Kerberos request for it should alert. Deliberately NOT a member of any privileged group.
+honey_accounts:
+  - {sam: svc-superadmin, first: Superintendent, last: Admin, path: Administration,
+     password: "Xq7!vR2mLz9#Tw5k", spns: ["HTTP/mapleadmin.maplewoodusd.local"],
+     description: "Superintendent emergency administrator (legacy) - DO NOT USE"}
+
+# Logon script placed in SYSVOL (NETLOGON) and set as scriptPath on staff accounts. It maps a
+# share using a service account's password in clear text - a classic district finding.
+logon_script:
+  filename: logon.bat
+  embeds: svc-copier               # whose credentials are hardcoded in the script
+  map: {drive: "R:", share: Scans}  # share on the file server the script maps
+
+# --- Phase 3: the MapleGrade SIS, GCDS, and ADCS --------------------------------
+
+# MapleGrade student information system: MSSQL Express + IIS on the file server, running as
+# svc-sis (which carries the MSSQLSvc/HTTP SPNs above). A Grades table is the grade-change target.
+sis:
+  host: srv01
+  service_account: svc-sis          # SQL service identity; already a service_account above
+  db_name: MapleGrade
+  sa_password: "Mssql_sa-Maple26!"   # mixed-mode sa (lab only)
+  sysadmins: ["MAPLEWOOD\\SG-SIS-Admins"]
+  web_title: "MapleGrade - MapleWood USD"
+
+# Google Cloud Directory Sync (GCDS) config on the file server: syncs AD users and groups to
+# Google Workspace. The config XML stores the sync account's AD password (base64-encoded) — a
+# realistic K-12 finding, and the bridge from SQL sysadmin access to the DCSync-capable account.
+gcds:
+  host: srv01
+  install_path: 'C:\GCDS'
+  config_file: maplewood-sync.xml
+  service_account: svc-gsync
+
+# Active Directory Certificate Services on the DC (DC, DNS, ADCS), with one deliberately
+# vulnerable template. ESC1: any domain user can enroll and supply their own subject with a
+# client-authentication EKU - impersonation of any user, the staff-Wi-Fi certificate story.
+adcs:
+  ca_host: dc01
+  vulnerable_template:
+    name: MapleWood-WiFi-User
+    source: ESC1                    # the GOAD ESC1 template, renamed for the district
+
+# --- Phase 4: detection ---------------------------------------------------------------------
+
+# Advanced audit policy pushed by GPO to every domain computer, so the Security-log events the
+# lessons rely on are recorded. setting: none | success | failure | both.
+audit_policy:
+  gpo_name: "MW Audit Policy"
+  subcategories:
+    - {name: Logon, setting: both}                              # 4624 / 4625
+    - {name: Logoff, setting: success}                          # 4634
+    - {name: Special Logon, setting: success}                   # 4672
+    - {name: Credential Validation, setting: both}              # 4776
+    - {name: Kerberos Authentication Service, setting: both}    # 4768 / 4771
+    - {name: Kerberos Service Ticket Operations, setting: both} # 4769 (Kerberoasting)
+    - {name: User Account Management, setting: success}         # 4720 / 4724 / 4726
+    - {name: Directory Service Access, setting: both}           # 4662 (DCSync)
+    - {name: File Share, setting: both}                         # 5140
+    - {name: Detailed File Share, setting: both}                # 5145 (SYSVOL script reads)
+    - {name: File System, setting: both}                        # 4663 (needs SACLs on the target)
+    - {name: Process Creation, setting: success}               # 4688
+
+# ELK monitoring, from GOAD's `elk` extension (installed with `install_extension elk`, not by the
+# core `goad install`): Elasticsearch/Logstash/Kibana on a Linux box at .50, and Winlogbeat + Sysmon
+# log agents on every domain host (`elk_log:children = domain`), so the lessons' events land in Kibana.
+# This block is metadata for verify; it describes what the extension installs, it does not drive it.
+monitoring:
+  elk:
+    enabled: true
+    ip: 50                       # last octet inside GOAD's ip_range (the extension reserves .50)
+    elasticsearch_port: 9200
+    kibana_port: 5601
+    agents:                      # Windows service names the extension installs on each log host
+      - winlogbeat
+      - sysmon64
+
+# Lab machines. Phase 0 builds dc01 + ws01; SRV01 and WS02 arrive in Phase 2.
+# ip is the last octet inside GOAD's ip_range. .50 is reserved for the ELK extension.
+hosts:
+  - key: dc01
+    hostname: mwdc01
+    type: dc
+    ip: 30
+    box: mayfly/windows_server2019
+    cpus: 2
+    mem: 4000
+  - key: ws01
+    hostname: mhs-staff01
+    type: workstation
+    ip: 31
+    box: mayfly/windows10
+    cpus: 2
+    mem: 4000
+    local_admin_password: "Ws-Maple-7Kq2"
+    ou: "OU=Staff Workstations,OU=Computers,OU=Maplewood High"
+    local_groups:
+      Remote Desktop Users: [SG-MHS-Staff]
+      # Seeded weakness: the MHS Computer Science teacher is a standing local admin on their
+      # own assigned staff laptop - a common K-12 "teachers are admins on their classroom PC"
+      # misconfiguration. Once that password is phished, the attacker has admin on WS01 over
+      # WinRM (WS01 blocks inbound SMB) and can use it as a pivot into the flat network.
+      # Fix: remove standing local admin and manage the local Administrator with LAPS.
+      Administrators: [aaliyah.morgan]
+  - key: srv01
+    hostname: mwsrv01
+    type: server
+    ip: 32
+    box: mayfly/windows_server2019
+    cpus: 2
+    mem: 6000                   # sized for the SIS (MSSQL + IIS) that Phase 3 adds
+    local_admin_password: "Srv-Maple-4Hn8"
+    ou: "OU=Servers,OU=District Office"
+    local_groups:
+      # Seeded weakness: the HVAC vendor account can RDP to the server.
+      Remote Desktop Users: [svc-hvac]
+  - key: ws02
+    hostname: mms-lab01
+    type: workstation
+    ip: 33
+    box: mayfly/windows10
+    cpus: 2
+    mem: 4000
+    local_admin_password: "Lab-Maple-2Rd6"
+    ou: "OU=Student Labs,OU=Computers,OU=Maplewood Middle"

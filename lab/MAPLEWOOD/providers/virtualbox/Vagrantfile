@@ -1,0 +1,6 @@
+boxes = [
+  { :name => "MAPLEWOOD-DC01", :ip => "{{ip_range}}.30", :box => "mayfly/windows_server2019", :os => "windows", :cpus => 2, :mem => 4000},
+  { :name => "MAPLEWOOD-WS01", :ip => "{{ip_range}}.31", :box => "mayfly/windows10", :os => "windows", :cpus => 2, :mem => 4000},
+  { :name => "MAPLEWOOD-SRV01", :ip => "{{ip_range}}.32", :box => "mayfly/windows_server2019", :os => "windows", :cpus => 2, :mem => 6000},
+  { :name => "MAPLEWOOD-WS02", :ip => "{{ip_range}}.33", :box => "mayfly/windows10", :os => "windows", :cpus => 2, :mem => 4000}
+]
